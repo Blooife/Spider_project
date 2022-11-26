@@ -198,7 +198,7 @@ public:
                 p->item.posY = pTop->item.posY;
             } else{
             p->item .posX = pTop->item.posX;
-            p->item .posY = pTop->item.posY + 15;}
+            p->item .posY = pTop->item.posY + 20;}
         }
         p->next = pTop; // p указывает на 1-й элемент
         if(pTop == nullptr){

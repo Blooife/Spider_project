@@ -39,11 +39,10 @@ bool checkPas(NodeStack* pTop){
 
 bool move(StackList* a, StackList* b){ //from a to b
     if(b->Check().value - a->Check().value == 1 || b->Check().value == 0){
-        Card c = a->Pop();
-        b->Push(c);
-        if(c.value == 1){
+        b->Push(a->Pop());
+        /*if(c.value == 1){
             checkPas(b->pTop);
-        }
+        }*/
         return true;
     } else{
         return false;
@@ -55,7 +54,10 @@ void drawStart(sf::RenderWindow &window, Box a){
         NodeStack* temp = a.box[i].bottom;
         while(temp != a.box[i].pTop){
             Card c= temp->item;
-            c.setTexture(c.path);
+            if(!c.visible){
+            c.setTexture(c.path);} else{
+                c.setTexture(c.m_path);
+            }
             c.setPosition(c.posX, c.posY);
             window.draw(c.m_sprite);
             temp = temp->prev;
@@ -63,10 +65,11 @@ void drawStart(sf::RenderWindow &window, Box a){
         }
     }
     for(int i = 0; i < 10; i++){
-            Card c= a.box[i].pTop->item;
-            c.setTexture(c.m_path);
-            c.setPosition(c.posX, c.posY);
-            window.draw(c.m_sprite);
+            Card* c= &a.box[i].pTop->item;
+            (*c).visible = true;
+            (*c).setTexture((*c).m_path);
+            (*c).setPosition((*c).posX, (*c).posY);
+            window.draw((*c).m_sprite);
     }
 };
 Tile chosen(sf::RenderWindow &window, Card* a){
@@ -81,4 +84,5 @@ bool clickInRange(sf::Event::MouseButtonEvent event, sf::IntRect rect)
 {
     return rect.contains(event.x, event.y);
 }
+
 #endif //SPIDER_SPIDERLOGIC_H
