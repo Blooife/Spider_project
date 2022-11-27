@@ -6,6 +6,8 @@
 //#include "Cards.cpp"
 #include "SpiderLogic.h"
 
+#define cardWidth a.box[0].Check().m_texture.getSize().x
+
 using namespace sf;
 
 int main() {
@@ -35,13 +37,14 @@ int main() {
     deck.PrintAll();
 
     Box a;
-    a.init(&deck, window.getSize().x % 10 + 50);
+    a.init(&deck, window.getSize().x % 10 + 50, cardWidth+20);
 
     bool isMove = false;
+    bool Chosen = false;
+    bool contained = true;
     Tile m_background;
     m_background.setTexture("C:/Users/Asus/Desktop/spider/resource/backgrounds/back_img.jpg");
     Tile chTile;
-
     while (window.isOpen()) {
 
         sf::Event event;
@@ -53,46 +56,78 @@ int main() {
                 window.close();
             } else{
                 int chBox;
-                if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-                    for(int i = 0; i<10; i++){
-                        if (clickInRange(event.mouseButton, sf::IntRect(a.box[i].Check().posX, a.box[i].Check().posY, 75, 115))) {
-                            chTile = chosen(window,&a.box[i].pTop->item);
-                            chBox = i;
-                            dX = a.box[i].Check().posX;
-                            dY = a.box[i].Check().posY;
-                            isMove = true;
-                            break;
-                        } else chTile.m_sprite.setColor(sf::Color(0,0,0,0));
-                    }
-                    if (clickInRange(event.mouseButton, sf::IntRect(deck.posX, deck.posY, 75, 115))) {
+                NodeStack* col;
+                if (event.type == Event::MouseButtonPressed)//если нажата клавиша мыши
+                    if (event.key.code == Mouse::Left) {
+                        sf::Vector2i clickPos = sf::Mouse::getPosition(window);
+                        int i = getColomn(clickPos,window.getSize().x % 10 + 50, cardWidth+20);
+                        if(i> -1) {
+                            col = a.box[i].pTop;
+                            while (col->item.visible){
+                                if (clickInRange(event.mouseButton,
+                                                 sf::IntRect(col->item.posX, col->item.posY, 75,
+                                                             115))) {
+                                    if(canDrag(col)){
+                                        chTile = chosen(window,&col->item);
+                                        Chosen = true;
+                                        chBox = i;
+                                        dX = col->item.posX;
+                                        dY = col->item.posY;
+                                        isMove = true;
+                                        break;
+                                    }
+
+                                } else {
+                                    chTile.m_sprite.setColor(sf::Color(0,0,0,0));
+                                    Chosen = false;
+                                }
+                                col = col->next;
+                            }
+                        }
+                        if  (clickInRange(event.mouseButton, sf::IntRect(deck.posX, deck.posY, 75, 115))) {
                         dealt(&a, &deck);
                     }
                 }
+                if(Chosen)
                 if (event.type == Event::MouseButtonReleased){
-                    bool moved;
+                    bool moved = false;
                     if (event.key.code == Mouse::Left){
-                        for(int i = 0; i<10; i++){
-                            if (clickInRange(event.mouseButton, sf::IntRect(a.box[i].Check().posX-10, a.box[i].Check().posY-10, 90, 130))) {
-                                moved = move(&a.box[chBox], &a.box[i]);
+                        Vector2i pos = Mouse::getPosition(window);
+                        for(int i = 0; i<chBox; i++){
+                            contained = releasedInRange(pos, sf::IntRect(a.box[i].Check().posX-10, a.box[i].Check().posY-10, 100, 150));
+                            if (contained) {
+                                moved = move(col,&a.box[chBox], &a.box[i]);
+                                break;
+                            }
+                        }
+                        if(!contained)
+                        for(int i = chBox+1; i<10; i++){
+                            contained = releasedInRange(pos, sf::IntRect(a.box[i].Check().posX-10, a.box[i].Check().posY-10, 100, 150));
+                            if (contained) {
+                                moved = move(col, &a.box[chBox],&a.box[i]);
                                 break;
                             }
                         }
                         if(!moved){
-                            a.box[chBox].pTop->item.posX = dX;
-                            a.box[chBox].pTop->item.posY = dY;
+                            col->item.posX = dX;
+                            col->item.posY = dY;
+                            Chosen = false;
                         }
                         isMove = false;
+
                     }
 
                 }
                 if (isMove) {
                     Vector2i  pixelPos = Mouse::getPosition(window);
-                    a.box[chBox].pTop->item.posX = pixelPos.x-35;
-                    a.box[chBox].pTop->item.posY =pixelPos.y-45;
+                    col->item.posX = pixelPos.x-35;
+                    col->item.posY = pixelPos.y-45;
+                   // window.draw(a.box[chBox].pTop->item.m_sprite);
                    }
                 }
         }
-     //   a.box[1].Check().m_sprite.
+
+      //  drawStart(window, a);
         window.draw(m_background);
         drawStart(window, a);
         deck.setTexture(deck.m_path);

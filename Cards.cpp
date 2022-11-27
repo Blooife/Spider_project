@@ -36,7 +36,7 @@ struct Card : public Tile
     std:: string path = "C:/Users/Asus/Desktop/spider/resource/cards/card_back.bmp";
     int value;
     float posX, posY;
-    bool visible;
+    bool visible = false;
     Suits getsuit(){
         return suit;
     }
@@ -52,6 +52,7 @@ struct Card : public Tile
     Card emptyCard(){
         Card c;
         c.value = 0;
+        c.visible = true;
         c.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/empty_card.png";
         c.setTexture(c.m_path);
         return c;
@@ -129,90 +130,40 @@ public:
     NodeStack* bottom;
     // конструктор по умолчанию
     StackList() { pTop = nullptr; bottom = nullptr; }
-
-    // конструктор копіювання
-   /* StackList(const StackList& SL)
-    {
-        NodeStack* p; // дополнительные указатели
-        NodeStack* p2;
-        NodeStack* p3;
-
-        // Инициализировать pTop
-        pTop = nullptr;
-        p3 = nullptr;
-
-        p = SL.pTop; // указатель p движется по списку SL.pTop->...
-        while (p != nullptr)
-        {
-            // 1. Сформировать узел p2
-            try {
-                // попытка выделения памяти
-                p2 = new NodeStack;
-            }
-            catch (bad_alloc e)
-            {
-                // если память не выделена, то выход
-                cout << e.what() << endl;
-                return;
-            }
-            p2->item = p->item;
-            p2->next = nullptr;
-
-            // 2. pTop = pTop + p2
-            if (pTop == nullptr) // создать очередь
-            {
-                pTop = p2;
-                p3 = p2;
-            }
-            else
-            {
-                p3->next = p2;
-                p3 = p3->next;
-            }
-
-            // 3. Перейти на следующий элемент
-            p = p->next;
-        }
-    }*/
-
     // поместить элемент в стек
     // элемент помещается на начало списка
     void Push(Card item)
     {
         NodeStack* p;
-
-        // 1. Сформировать элемент
-        try {
-            p = new NodeStack; // попытка выделить память
-        }
-        catch(bad_alloc e)
-        {
-            // если память не выделилась, то выход
-            cout << e.what() << endl;
-            return;
-        }
+        p = new NodeStack;
         p->item = item;
         if(pTop != nullptr){
+            p->item .posX = pTop->item.posX;
             if(pTop->next == nullptr){
-                p->item.posX = pTop->item.posX;
                 p->item.posY = pTop->item.posY;
             } else{
-            p->item .posX = pTop->item.posX;
-            p->item .posY = pTop->item.posY + 20;}
+                if(pTop->item.visible){
+                    p->item .posY = pTop->item.posY + 20;
+                }
+                else{
+                    p->item .posY = pTop->item.posY + 15;
+                }
+            }
         }
         p->next = pTop; // p указывает на 1-й элемент
         if(pTop == nullptr){
             bottom = p;
+            bottom->next = nullptr;
         }
         else{
             pTop->prev= p;
         }
         // 2. Перенаправить pTop на p
         pTop = p;
+        pTop->prev = nullptr;
 
     }
 
-    // Количество элементов в стеке
     int Count()
     {
         if (pTop == nullptr)
@@ -229,8 +180,6 @@ public:
             }
         }
     }
-
-    // очищает стек - удаляет все элементы из стека
     void Empty()
     {
         NodeStack* p; // дополнительный указатель
@@ -238,7 +187,7 @@ public:
 
         p = pTop;
 
-        while (!p)
+        while (p != nullptr)
         {
             p2 = p; // сделать копию из p
             p = p->next; // перейти на следующий элемент стека
@@ -246,60 +195,10 @@ public:
         }
         pTop = nullptr; // поправить вершину стека
     }
-
-    // оператор копирования
-    StackList& operator=(const StackList& LS)
-    {
-        // есть ли элементы в стеке?
-        if (pTop != nullptr) Empty();
-
-        NodeStack* p; // дополнительный указатель
-        NodeStack* p2;
-        NodeStack* p3;
-
-        // Инициализировать pTop
-        pTop = nullptr;
-        p3 = nullptr;
-
-        p = LS.pTop; // указатель p двигается по списку SL.pTop->...
-        while (p != nullptr)
-        {
-            // 1. Сформировать узел p2
-            try {
-                // попытка выделить память
-                p2 = new NodeStack;
-            }
-            catch (bad_alloc e)
-            {
-                // если память не выделена, то выход
-                cout << e.what() << endl;
-                return *this;
-            }
-            p2->item = p->item;
-            p2->next = nullptr;
-
-            // 2. pTop = pTop + p2
-            if (pTop == nullptr) // создать стек
-            {
-                pTop = p2;
-                p3 = p2;
-            }
-            else
-            {
-                p3->next = p2;
-                p3 = p3->next;
-            }
-
-            // 3. Перейти на следующий элемент
-            p = p->next;
-        }
-        return *this;
-    }
-
     // деструктор
     ~StackList()
     {
-        Empty();
+        //Empty();
     }
 
     // метод, вытягивающий элемент со стека
@@ -381,6 +280,7 @@ struct Deck: public Tile
                 c.suit = (Suits)col;
                 c.name = (CardNames)row;
                 c.value = (int)c.name;
+                c.visible = true;
                 c.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/card" + std::to_string(col)+std::to_string(row)+".bmp";
                 c.setTexture(c.m_path);
                 arrCards[index] = c;
@@ -399,38 +299,47 @@ struct Deck: public Tile
             arrCards[k] = arrCards[l];
             arrCards[l] = temp;
         }
+
+        for(int i = 103; i>59;i--){
+            arrCards[i].visible = false;
+        }
     };
 
     Card pop(){
         size -= 1;
         return arrCards[size];
     };
+
+
 };
 
 class Box{
 public:
      StackList box[10];
-     int size = 54;
-     void init(Deck* deck, float x){
+     void init(Deck* deck, float x, float cardWidth){
          Card c;
          c = c.emptyCard();
          for(int i = 0; i<10; i++){
              box[i].Push(c);
              box[i].pTop->item.posX = x;
              box[i].pTop->item.posY = 30;
-             x+=90;
+             x+=cardWidth;
+         }
+         for(int i = 0; i < 10; i++){
+             for(int j = 0; j<4; j++){
+                  c = deck->pop();
+                 box[i].Push(c);
+               //  box[i].pTop->item.visible = false;
+             }
          }
          for(int i = 0; i < 4; i++){
-             for(int j = 0; j<6; j++){
                  box[i].Push((*deck).pop());
-             }
          }
-         for(int i = 4; i < 10; i++){
-             for(int j = 0; j<5; j++){
-                 box[i].Push((*deck).pop());
-             }
+         for(int i = 0; i < 10; i++){
+             box[i].Push((*deck).pop());
          }
      }
+
     void draw(sf::RenderWindow window){
          float x = 100;
          float y = 100;
