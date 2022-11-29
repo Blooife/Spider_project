@@ -7,6 +7,7 @@
 #include "SpiderLogic.h"
 
 #define cardWidth a.box[0].Check().m_texture.getSize().x
+#define cardHeight a.box[0].Check().m_texture.getSize().y
 
 using namespace sf;
 
@@ -21,10 +22,10 @@ int main() {
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
     window.setPosition(sf::Vector2i(desktop.width / 2 - window.getSize().x/2, desktop.height/2 - window.getSize().y/2));
 
-    //int menuNum =menu(window);//вызов меню
+    int menuNum =menu(window);//вызов меню
     Deck deck;
-   // deck.SetupCards(menuNum);
-    deck.SetupCards(1);
+    deck.SetupCards(menuNum);
+  //  deck.SetupCards(1);
     deck.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/card_back.bmp";
     deck.setTexture(deck.m_path);
     deck.posX = window.getSize().x-150;
@@ -34,17 +35,17 @@ int main() {
 
     std::cout << std::endl;
     deck.shuffle();
-    deck.PrintAll();
-
     Box a;
     a.init(&deck, window.getSize().x % 10 + 50, cardWidth+20);
-
+    sf::Image img;
+    img.loadFromFile("C:/Users/Asus/Desktop/spider/resource/chosen1.png");
+    img.setPixel(30,30,sf::Color::Transparent);
     bool isMove = false;
     bool Chosen = false;
     bool contained = true;
     Tile m_background;
     m_background.setTexture("C:/Users/Asus/Desktop/spider/resource/backgrounds/back_img.jpg");
-    Tile chTile;
+    int chBox=-1;
     while (window.isOpen()) {
 
         sf::Event event;
@@ -55,7 +56,7 @@ int main() {
             if(event.type == sf::Event::Closed){
                 window.close();
             } else{
-                int chBox;
+
                 NodeStack* col;
                 if (event.type == Event::MouseButtonPressed)//если нажата клавиша мыши
                     if (event.key.code == Mouse::Left) {
@@ -63,27 +64,29 @@ int main() {
                         int i = getColomn(clickPos,window.getSize().x % 10 + 50, cardWidth+20);
                         if(i> -1) {
                             col = a.box[i].pTop;
-                            while (col->item.visible){
+                            if(col->item.value == 0){
+                                int k = 0;
+                            }
+                            while (col && col->item.visible){
                                 if (clickInRange(event.mouseButton,
                                                  sf::IntRect(col->item.posX, col->item.posY, 75,
                                                              115))) {
                                     if(canDrag(col)){
-                                        chTile = chosen(window,&col->item);
+
                                         Chosen = true;
                                         chBox = i;
                                         dX = col->item.posX;
                                         dY = col->item.posY;
                                         isMove = true;
                                         break;
-                                    }
+                                    } else Chosen = false;
 
                                 } else {
-                                    chTile.m_sprite.setColor(sf::Color(0,0,0,0));
                                     Chosen = false;
                                 }
                                 col = col->next;
                             }
-                        }
+                        } else chBox = -1;
                         if  (clickInRange(event.mouseButton, sf::IntRect(deck.posX, deck.posY, 75, 115))) {
                         dealt(&a, &deck);
                     }
@@ -111,10 +114,11 @@ int main() {
                         if(!moved){
                             col->item.posX = dX;
                             col->item.posY = dY;
+
                             Chosen = false;
                         }
                         isMove = false;
-
+                      //  col = nullptr;
                     }
 
                 }
@@ -122,17 +126,15 @@ int main() {
                     Vector2i  pixelPos = Mouse::getPosition(window);
                     col->item.posX = pixelPos.x-35;
                     col->item.posY = pixelPos.y-45;
-                   // window.draw(a.box[chBox].pTop->item.m_sprite);
                    }
                 }
         }
 
       //  drawStart(window, a);
         window.draw(m_background);
-        drawStart(window, a);
+        drawStart(window, &a, chBox);
         deck.setTexture(deck.m_path);
         window.draw(deck.m_sprite);
-        window.draw(chTile);
         window.display();
         sf::sleep(sf::milliseconds(20));
     }

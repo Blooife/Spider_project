@@ -36,23 +36,7 @@ bool checkPas(NodeStack* pTop){
         return false;
     }
 };
-NodeStack* del(NodeStack* a){
-    if(a->prev == nullptr){
-        a->next->prev = nullptr;
-//        delete a;
-        return nullptr;
-    }else
-    if(a->next == nullptr){
-        a->prev->next = nullptr;
-    //    delete a;
-        return nullptr;
-    } else{
-        NodeStack* buf = a->next;
-        a->prev->next = a->next;
-     //   delete buf;
-         return buf;
-    }
-}
+
 bool move(NodeStack* col, StackList* a, StackList* b){ //from a to b
     StackList temp;
     if(b->Check().value - col->item.value == 1 || b->Check().value == 0){
@@ -60,6 +44,7 @@ bool move(NodeStack* col, StackList* a, StackList* b){ //from a to b
         temp.Push(a->Pop());
     };
     temp.Push(a->Pop());
+    a->pTop->item.visible = true;
 
         while (temp.pTop){
             b->Push(temp.Pop());
@@ -67,16 +52,18 @@ bool move(NodeStack* col, StackList* a, StackList* b){ //from a to b
 //            col = col->prev;
            // delete col;
         }
+        temp.pTop = nullptr;
         return true;
     } else{
         return false;
     }
 };
 
-void drawStart(sf::RenderWindow &window, Box a){
-        for (int i = 0; i < 10; i++) {
-            NodeStack *temp = a.box[i].bottom;
-            while (temp != a.box[i].pTop) {
+void drawStart(sf::RenderWindow &window, Box* a, int chBox){
+        NodeStack *temp;
+        for (int i = 0; i < chBox; i++) {
+           temp = (*a).box[i].bottom;
+            while (temp != nullptr) {
                 Card c = temp->item;
                 if (!c.visible) {
                     c.setTexture(c.path);
@@ -89,22 +76,63 @@ void drawStart(sf::RenderWindow &window, Box a){
 
             }
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = chBox+1; i < 10; i++) {
+            temp = (*a).box[i].bottom;
+            while (temp != nullptr) {
+                Card c = temp->item;
+                if (!c.visible) {
+                    c.setTexture(c.path);
+                } else {
+                    c.setTexture(c.m_path);
+                }
+                c.setPosition(c.posX, c.posY);
+                window.draw(c.m_sprite);
+                temp = temp->prev;
+
+            }
+        }
+        if(chBox != -1) {
+            temp = (*a).box[chBox].bottom;
+            while (temp != nullptr) {
+                Card c = temp->item;
+                if (!c.visible) {
+                    c.setTexture(c.path);
+                } else {
+                    c.setTexture(c.m_path);
+                }
+                c.setPosition(c.posX, c.posY);
+                window.draw(c.m_sprite);
+                temp = temp->prev;
+            }
+        }
+        /*if(col){
+            col->item.setPosition(col->item.posX, col->item.posY);
+            col->item.setTexture(col->item.m_path);
+            window.draw(col->item.m_sprite);
+        }*/
+
+       /* for (int i = 0; i < 10; i++) {
             Card *c = &a.box[i].pTop->item;
             (*c).visible = true;
             (*c).setTexture((*c).m_path);
             (*c).setPosition((*c).posX, (*c).posY);
             window.draw((*c).m_sprite);
-        }
+        }*/
 };
-Tile chosen(sf::RenderWindow &window, Card* a){
-    Tile up;
-    up.m_path = "C:/Users/Asus/Desktop/spider/resource/chosen1.png";
-    up.setPosition(a->posX-2, a->posY);
-    up.setTexture(up.m_path);
-    up.m_sprite.setColor(sf::Color(0,0,0,100));
-    return up;
-}
+ void setColorIfCardChosen(Tile *up, Tile *down, NodeStack* col, float cardHeight){
+     (*up).setPosition(col->item.posX-2, col->item.posY-2);
+     (*up).setTexture((*up).m_path);
+    // (*up).m_sprite.setColor(sf::Color(0,0,0,100));
+     (*up).m_sprite.setColor(sf::Color(254,254,34,200));
+     float y=0;
+     NodeStack* temp = col;
+     while (temp->prev){
+         y+=20;
+     }
+     (*down).setPosition(col->item.posX-2, col->item.posY+20+y+cardHeight/2);
+     (*down).setTexture((*down).m_path);
+     (*down).m_sprite.setColor(sf::Color(0,0,0,100));
+ }
 bool clickInRange(sf::Event::MouseButtonEvent event, sf::IntRect rect)
 {
     return rect.contains(event.x, event.y);
@@ -116,7 +144,9 @@ bool releasedInRange(sf::Vector2i  pixelPos, sf::IntRect rect)
 }
 
 bool canDrag(NodeStack* col){
-
+    if(col->item.value == 0){
+        return false;
+    }
     while (col->prev){
         if(!(col->item.suit == col->prev->item.suit && col->item.value - col->prev->item.value == 1)){
             return false;

@@ -37,18 +37,6 @@ struct Card : public Tile
     int value;
     float posX, posY;
     bool visible = false;
-    Suits getsuit(){
-        return suit;
-    }
-    int getvalue(){
-        return value;
-    }
-    void makeVisible(){
-        visible = true;
-    };
-    void makeUnvisible(){
-        visible = false;
-    };
     Card emptyCard(){
         Card c;
         c.value = 0;
@@ -56,59 +44,6 @@ struct Card : public Tile
         c.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/empty_card.png";
         c.setTexture(c.m_path);
         return c;
-    }
-    void PrintCard()
-    {
-        PrintValue();
-
-        std::cout << " of ";
-
-        PrintSuit();
-
-        std::cout << std::endl;
-    }
-
-    void PrintValue()
-    {
-        if (name == CardNames::JACK)
-        {
-            std::cout << "jack";
-        }
-        else if (name == CardNames::QUEEN)
-        {
-            std::cout << "queen";
-        }
-        else if (name == CardNames::KING)
-        {
-            std::cout << "king";
-        }
-        else if (name == CardNames::ACE)
-        {
-            std::cout << "ace";
-        }
-        else {
-            std::cout << value;
-        }
-    }
-
-    void PrintSuit()
-    {
-        if (suit == Suits::CLUBS)
-        {
-            std::cout << "clubs";
-        }
-        else if (suit == Suits::DIAMONDS)
-        {
-            std::cout << "diamonds";
-        }
-        else if (suit == Suits::HEARTS)
-        {
-            std::cout << "hearts";
-        }
-        else if (suit == Suits::SPADES)
-        {
-            std::cout << "spades";
-        }
     }
 };
 
@@ -146,7 +81,7 @@ public:
                     p->item .posY = pTop->item.posY + 20;
                 }
                 else{
-                    p->item .posY = pTop->item.posY + 15;
+                    p->item .posY = pTop->item.posY + 10;
                 }
             }
         }
@@ -193,12 +128,26 @@ public:
             p = p->next; // перейти на следующий элемент стека
             delete p2; // удалить память, выделенную для предыдущего элемента
         }
-        pTop = nullptr; // поправить вершину стека
+       // pTop = nullptr; // поправить вершину стека
+
     }
     // деструктор
     ~StackList()
     {
         //Empty();
+        NodeStack* p; // дополнительный указатель
+        NodeStack* p2;
+
+        p = pTop;
+
+        while (p != nullptr)
+        {
+            p2 = p; // сделать копию из p
+            p = p->next; // перейти на следующий элемент стека
+            delete p2; // удалить память, выделенную для предыдущего элемента
+        }
+         pTop = nullptr; // поправить вершину стека
+         bottom = nullptr;
     }
 
     // метод, вытягивающий элемент со стека
@@ -218,7 +167,8 @@ public:
         // перенаправить указатели pTop, p2
         p2 = pTop;
         pTop = pTop->next;
-
+        if(pTop != nullptr)
+        pTop->prev = nullptr;
         // Освободить память, выделенную под 1-й элемент
         delete p2;
 
@@ -241,14 +191,6 @@ struct Deck: public Tile
     Card arrCards[104];
     float posX;
     float posY;
-    void PrintAll()
-    {
-        for (int index = 0; index<size; index++)
-        {
-            std::cout << index<<" ";
-            arrCards[index].PrintCard();
-        }
-    }
 
     void SetupCards(int complx)
     {
@@ -339,17 +281,6 @@ public:
              box[i].Push((*deck).pop());
          }
      }
-
-    void draw(sf::RenderWindow window){
-         float x = 100;
-         float y = 100;
-         float distX = window.getSize().x % 900;
-         float distY = window.getSize().y % 900;
-        for(int i = 0; i<10; i++){
-            box[i].pTop->item.setPosition(x,y);
-            window.draw(box[i].pTop->item.m_sprite);
-        }
-    };
 };
 
 
