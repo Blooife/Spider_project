@@ -4,7 +4,6 @@
 
 #ifndef SPIDER_SPIDERLOGIC_H
 #define SPIDER_SPIDERLOGIC_H
-#include "iostream"
 #include "Cards.cpp"
 
 bool checkPas(StackList* b){

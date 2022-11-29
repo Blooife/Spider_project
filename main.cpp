@@ -2,8 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
+#include <SFML/Audio.hpp>
 #include "Menu.h"
-//#include "Cards.cpp"
 #include "SpiderLogic.h"
 
 #define cardWidth a.box[0].Check().m_texture.getSize().x
@@ -25,12 +25,15 @@ int main() {
     int menuNum =menu(window);//вызов меню
     Deck deck;
     deck.SetupCards(menuNum);
-  //  deck.SetupCards(1);
     deck.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/card_back.bmp";
     deck.setTexture(deck.m_path);
     deck.posX = window.getSize().x-150;
     deck.posY = window.getSize().y-150;
     deck.setPosition(deck.posX,deck.posY);
+    //SoundBuffer bufferDealt;
+    //bufferDealt.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
+    //Sound soundDealt;
+    //soundDealt.;
 
 
     std::cout << std::endl;
@@ -88,8 +91,9 @@ int main() {
                             }
                         } else chBox = -1;
                         if  (clickInRange(event.mouseButton, sf::IntRect(deck.posX, deck.posY, 75, 115))) {
-                        dealt(&a, &deck);
-                    }
+                            dealt(&a, &deck);
+                            //soundDealt.play();
+                        }
                 }
                 if(Chosen)
                 if (event.type == Event::MouseButtonReleased){

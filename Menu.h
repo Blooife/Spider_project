@@ -42,16 +42,17 @@ int menu(sf::RenderWindow & window) {
 
         if (sf::IntRect(x1, 120, 300, 70).contains(sf::Mouse::getPosition(window))) {
             menu1.setColor(sf::Color::Black);
-            menuNum = 1; }
+            menuNum = 1; } else
         if (sf::IntRect(x2, 220, 300, 70).contains(sf::Mouse::getPosition(window))) {
             menu2.setColor(sf::Color::Black);
-            menuNum = 2; }
+            menuNum = 2; } else
         if (sf::IntRect(x3, 320, 300, 70).contains(sf::Mouse::getPosition(window))) {
             menu3.setColor(sf::Color::Black);
             menuNum = 3; }
 
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
         {
+            if(menuNum==1 || menuNum == 2 || menuNum == 3)
             isMenu = false;//если нажали первую кнопку, то выходим из меню
         }
         window.draw(menu1);
