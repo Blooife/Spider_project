@@ -7,10 +7,37 @@
 #include "iostream"
 #include "Cards.cpp"
 
+bool checkPas(StackList* b){
+    NodeStack*  temp = b->pTop;
+    Card c;
+    int i = 0;
+    while (temp->next->item.visible  && i < 12) {
+        if (temp->next->item.value - temp->item.value == 1 && temp->item.suit == temp->next->item.suit) {
+            i++;
+        } else {
+            break;
+        }
+        temp = temp->next;
+    }
+    if(i == 12){
+        for(int i = 0; i < 13; i++){
+            b->Pop();
+        }
+        b->pTop->item.visible = true;
+        return true;
+    } else{
+        return false;
+    }
+};
+
 bool dealt(Box* a, Deck* deck){
     if((*deck).size>0){
         for(int i = 0;i<10; i++){
-            a->box[i].Push((*deck).pop());
+            Card c = (*deck).pop();
+            a->box[i].Push(c);
+            if(c.value == 1){
+                checkPas(&a->box[i]);
+            }
         }
         if((*deck).size<10){
             deck->m_path="C:/Users/Asus/Desktop/spider/resource/cards/empty_card.png";
@@ -18,21 +45,6 @@ bool dealt(Box* a, Deck* deck){
         return true;
     } else{
 
-        return false;
-    }
-};
-
-bool checkPas(NodeStack* pTop){
-    NodeStack*  temp = pTop;
-    Card c;
-    int i = 0;
-    while (temp->next->item.value != 0 && i < 13)
-        if(temp->next->item.value - temp->item.value == 1 && temp->item.suit==temp->next->item.suit){
-            i++;
-        }
-    if(i == 12){
-        return true;
-    } else{
         return false;
     }
 };
@@ -48,11 +60,11 @@ bool move(NodeStack* col, StackList* a, StackList* b){ //from a to b
 
         while (temp.pTop){
             b->Push(temp.Pop());
-  //          col->next->prev = col->prev;
-//            col = col->prev;
-           // delete col;
         }
         temp.pTop = nullptr;
+        if(b->pTop->item.value == 1) {
+            checkPas(b);
+        }
         return true;
     } else{
         return false;

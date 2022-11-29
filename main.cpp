@@ -112,9 +112,14 @@ int main() {
                             }
                         }
                         if(!moved){
-                            col->item.posX = dX;
-                            col->item.posY = dY;
-
+                            NodeStack* temp = col;
+                            float y = dY;
+                            while(temp){
+                                temp->item.posX = dX;
+                                temp->item.posY = y;
+                                y+=20;
+                                temp = temp->prev;
+                            }
                             Chosen = false;
                         }
                         isMove = false;
@@ -124,8 +129,15 @@ int main() {
                 }
                 if (isMove) {
                     Vector2i  pixelPos = Mouse::getPosition(window);
-                    col->item.posX = pixelPos.x-35;
-                    col->item.posY = pixelPos.y-45;
+                    NodeStack* temp = col;
+                    float y = pixelPos.y-45;
+                    while(temp){
+                        temp->item.posX = pixelPos.x-35;
+                        temp->item.posY = y;
+                        y+=20;
+                        temp = temp->prev;
+                    }
+
                    }
                 }
         }
