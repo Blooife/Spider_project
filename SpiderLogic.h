@@ -130,19 +130,33 @@ void drawStart(sf::RenderWindow &window, Box* a, int chBox){
             window.draw((*c).m_sprite);
         }*/
 };
- void setColorIfCardChosen(Tile *up, Tile *down, NodeStack* col, float cardHeight){
-     (*up).setPosition(col->item.posX-2, col->item.posY-2);
-     (*up).setTexture((*up).m_path);
-    // (*up).m_sprite.setColor(sf::Color(0,0,0,100));
-     (*up).m_sprite.setColor(sf::Color(254,254,34,200));
+ sf::ConvexShape setColorIfCardChosen(NodeStack* col, float width, float height){
+     sf::RectangleShape chTile;
+     sf::ConvexShape convex;
+     convex.setPointCount(4);
+     float startx = col->item.posX, starty = col->item.posY;
+
+     convex.setOutlineThickness(3.f);
+     chTile.setPosition(startx, starty);
      float y=0;
      NodeStack* temp = col;
      while (temp->prev){
          y+=20;
+         temp = temp->prev;
      }
-     (*down).setPosition(col->item.posX-2, col->item.posY+20+y+cardHeight/2);
-     (*down).setTexture((*down).m_path);
-     (*down).m_sprite.setColor(sf::Color(0,0,0,100));
+     y = y +height;
+     convex.setPoint(0, sf::Vector2f(startx, starty));
+     convex.setPoint(1, sf::Vector2f(startx+width, starty));
+     convex.setPoint(2, sf::Vector2f(startx+width, starty+y));
+     convex.setPoint(3, sf::Vector2f(startx, starty+y));
+     convex.setFillColor(sf::Color(0,0,0,0));
+     convex.setOutlineColor(sf::Color(0,0,0,100));
+    /* sf::Vector2f size;
+     size.x = cardWidth;
+     size.y = y;
+     chTile.setSize(size);
+     chTile.setOutlineColor(sf::Color(0,0,0,100));*/
+     return convex;
  }
 bool clickInRange(sf::Event::MouseButtonEvent event, sf::IntRect rect)
 {

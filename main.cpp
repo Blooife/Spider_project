@@ -30,31 +30,39 @@ int main() {
     deck.posX = window.getSize().x-150;
     deck.posY = window.getSize().y-150;
     deck.setPosition(deck.posX,deck.posY);
-    //SoundBuffer bufferDealt;
-    //bufferDealt.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
-    //Sound soundDealt;
-    //soundDealt.;
-
-
+    SoundBuffer bufferDealt;
+    bufferDealt.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
+    Sound soundDealt;
+    soundDealt.setBuffer(bufferDealt);
+    SoundBuffer bufferPlace;
+    bufferPlace.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardPlace.ogg");
+    Sound soundPlace;
+    soundPlace.setBuffer(bufferPlace);
+    SoundBuffer bufferSlide;
+    bufferSlide.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
+    Sound soundSlide;
+    soundDealt.setBuffer(bufferSlide);
     std::cout << std::endl;
     deck.shuffle();
     Box a;
     a.init(&deck, window.getSize().x % 10 + 50, cardWidth+20);
-    sf::Image img;
-    img.loadFromFile("C:/Users/Asus/Desktop/spider/resource/chosen1.png");
-    img.setPixel(30,30,sf::Color::Transparent);
     bool isMove = false;
     bool Chosen = false;
     bool contained = true;
     Tile m_background;
     m_background.setTexture("C:/Users/Asus/Desktop/spider/resource/backgrounds/back_img.jpg");
+    sf::ConvexShape convex;
+    convex.setPointCount(4);
+    convex.setFillColor(sf::Color(0,0,0,0));
+    convex.setOutlineThickness(0);
+    convex.setOutlineColor(sf::Color(0,0,0,0));
     int chBox=-1;
     while (window.isOpen()) {
 
         sf::Event event;
         int dX;
         int dY;
-
+        //soundDealt.play();
         while (window.pollEvent(event)){
             if(event.type == sf::Event::Closed){
                 window.close();
@@ -75,24 +83,29 @@ int main() {
                                                  sf::IntRect(col->item.posX, col->item.posY, 75,
                                                              115))) {
                                     if(canDrag(col)){
-
+                                        //setColorIfCardChosen(&chTile, col);
+                                        convex = setColorIfCardChosen(col, cardWidth, cardHeight);
                                         Chosen = true;
                                         chBox = i;
                                         dX = col->item.posX;
                                         dY = col->item.posY;
                                         isMove = true;
                                         break;
-                                    } else Chosen = false;
+                                    } else {
+                                        Chosen = false;
+                                        convex.setOutlineThickness(0);
+                                    }
 
                                 } else {
                                     Chosen = false;
+                                    convex.setOutlineThickness(0);
                                 }
                                 col = col->next;
                             }
                         } else chBox = -1;
                         if  (clickInRange(event.mouseButton, sf::IntRect(deck.posX, deck.posY, 75, 115))) {
                             dealt(&a, &deck);
-                            //soundDealt.play();
+                            soundDealt.play();
                         }
                 }
                 if(Chosen)
@@ -124,16 +137,18 @@ int main() {
                                 y+=20;
                                 temp = temp->prev;
                             }
+                            convex = setColorIfCardChosen(col, cardWidth,cardHeight);
                             Chosen = false;
-                        }
+                        } else convex.setOutlineThickness(0);
                         isMove = false;
-                      //  col = nullptr;
+                        //convex.setOutlineThickness(0);
                     }
 
                 }
                 if (isMove) {
                     Vector2i  pixelPos = Mouse::getPosition(window);
                     NodeStack* temp = col;
+
                     float y = pixelPos.y-45;
                     while(temp){
                         temp->item.posX = pixelPos.x-35;
@@ -141,16 +156,18 @@ int main() {
                         y+=20;
                         temp = temp->prev;
                     }
-
+                    convex = setColorIfCardChosen(col,cardWidth,cardHeight);
                    }
                 }
         }
 
       //  drawStart(window, a);
+
         window.draw(m_background);
         drawStart(window, &a, chBox);
         deck.setTexture(deck.m_path);
         window.draw(deck.m_sprite);
+        window.draw(convex);
         window.display();
         sf::sleep(sf::milliseconds(20));
     }
