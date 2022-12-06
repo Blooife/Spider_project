@@ -281,6 +281,14 @@ public:
              box[i].Push((*deck).pop());
          }
      }
+    Box& operator=(const Box* a)
+    {
+        for(int i =0; i<10; i++){
+            this->box[i].pTop = a->box[i].pTop;
+            this->box[i].bottom = a->box[i].bottom;
+        }
+        return *this;
+    }
 };
 
 
