@@ -226,22 +226,36 @@ bool startGame(RenderWindow &window, int menuNum){
                                     moved = move(col,&a.box[chBox], &a.box[i]);
                                     if(moved && !a.box[chBox].pTop->item.visible){
                                         Card c = a.box[chBox].pTop->item;
-                                        a.box[chBox].pTop->item.visible = true;
-                                        a.box[chBox].pTop->item.m_sprite.setScale(0.5, 1);
                                         c.setPosition(c.posX, c.posY);
                                         c.setTexture(c.path);
-                                        for(int i = 0; i<5; i++){
-                                            c.m_sprite.setScale(1-i*0.2, 1);
+                                        for(int i = 1; i<5; i++){
+                                            c.m_sprite.setScale(1-i*0.25, 1);
+                                            c.m_sprite.setPosition(c.m_sprite.getPosition().x + cardWidth*0.1,c.m_sprite.getPosition().y);
                                             window.clear();
                                             window.draw(m_background);
                                             drawStart(window,&a, 0);
                                             window.draw(deck.m_sprite);
-                                           // window.draw(convex);
                                             window.draw(hintTile);
                                             window.draw(restartTile);
                                             window.draw(c);
                                             window.display();
                                         }
+                                        c.visible = true;
+                                        c.m_path = a.box[chBox].pTop->item.m_path;
+                                        c.setTexture(c.m_path);
+                                        for(int i = 1; i<5; i++){
+                                            c.m_sprite.setScale(0 +i*0.25, 1);
+                                            c.m_sprite.setPosition(c.m_sprite.getPosition().x - cardWidth*0.1,c.m_sprite.getPosition().y);
+                                            window.clear();
+                                            window.draw(m_background);
+                                            drawStart(window,&a, 0);
+                                            window.draw(deck.m_sprite);
+                                            window.draw(hintTile);
+                                            window.draw(restartTile);
+                                            window.draw(c.m_sprite);
+                                            window.display();
+                                        }
+                                        a.box[chBox].pTop->item.visible = true;
                                     }
                                     break;
                                 }
@@ -253,22 +267,36 @@ bool startGame(RenderWindow &window, int menuNum){
                                         moved = move(col, &a.box[chBox],&a.box[i]);
                                         if(moved && !a.box[chBox].pTop->item.visible){
                                             Card c = a.box[chBox].pTop->item;
-                                            a.box[chBox].pTop->item.visible = true;
-                                            a.box[chBox].pTop->item.m_sprite.setScale(0.5, 1);
                                             c.setPosition(c.posX, c.posY);
                                             c.setTexture(c.path);
-                                            for(int i = 0; i<5; i++){
-                                                c.m_sprite.setScale(1-i*0.2, 1);
+                                            for(int i = 1; i<5; i++){
+                                                c.m_sprite.setScale(1-i*0.25, 1);
+                                                c.m_sprite.setPosition(c.m_sprite.getPosition().x + cardWidth*0.1,c.m_sprite.getPosition().y);
                                                 window.clear();
                                                 window.draw(m_background);
                                                 drawStart(window,&a, 0);
                                                 window.draw(deck.m_sprite);
-                                              //  window.draw(convex);
                                                 window.draw(hintTile);
                                                 window.draw(restartTile);
                                                 window.draw(c);
                                                 window.display();
                                             }
+                                            c.visible = true;
+                                            c.m_path = a.box[chBox].pTop->item.m_path;
+                                            c.setTexture(c.m_path);
+                                            for(int i = 1; i<5; i++){
+                                                c.m_sprite.setScale(0 +i*0.25, 1);
+                                                c.m_sprite.setPosition(c.m_sprite.getPosition().x - cardWidth*0.1,c.m_sprite.getPosition().y);
+                                                window.clear();
+                                                window.draw(m_background);
+                                                drawStart(window,&a, 0);
+                                                window.draw(deck.m_sprite);
+                                                window.draw(hintTile);
+                                                window.draw(restartTile);
+                                                window.draw(c.m_sprite);
+                                                window.display();
+                                            }
+                                            a.box[chBox].pTop->item.visible = true;
                                         }
                                         break;
                                     }
