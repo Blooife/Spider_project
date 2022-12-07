@@ -21,22 +21,26 @@ bool startGame(RenderWindow &window, int menuNum){
     deck.posY = window.getSize().y-150;
     deck.setPosition(deck.posX,deck.posY);
     deck.setTexture(deck.m_path);
-    SoundBuffer bufferDealt;
-    bufferDealt.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
     Sound soundDealt;
-    soundDealt.setBuffer(bufferDealt);
-    SoundBuffer bufferPlace;
-    bufferPlace.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardPlace.ogg");
     Sound soundPlace;
-    soundPlace.setBuffer(bufferPlace);
-    SoundBuffer bufferSlide;
-    bufferSlide.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardSlide.ogg");
     Sound soundSlide;
+    sf::SoundBuffer bufferDealt;
+    bufferDealt.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
+    soundDealt.setBuffer(bufferDealt);
+    sf::SoundBuffer bufferPlace;
+    bufferPlace.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardPlace.ogg");
+    soundPlace.setBuffer(bufferPlace);
+    sf::SoundBuffer bufferSlide;
+    bufferSlide.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardSlide.ogg");
     soundSlide.setBuffer(bufferSlide);
     Tile hintTile;
     hintTile.m_path = "C:/Users/Asus/Desktop/spider/resource/hint.png";
     hintTile.setTexture(hintTile.m_path);
     hintTile.setPosition(window.getSize().x-50, window.getSize().y-300);
+    Tile restartTile;
+    restartTile.m_path = "C:/Users/Asus/Desktop/spider/resource/icons/refresh1.bmp";
+    restartTile.setTexture(restartTile.m_path);
+    restartTile.setPosition(window.getSize().x-45, window.getSize().y-250);
     deck.shuffle();
     Box a;
     a.init(&deck, window.getSize().x % 10 + 50, cardWidth+20);
@@ -63,7 +67,7 @@ bool startGame(RenderWindow &window, int menuNum){
                 NodeStack* col;
                 StackList hintNode;
                 int hintTo;
-                if(Keyboard::isKeyPressed(sf::Keyboard::Tab)){
+                if(clickInRange(event.mouseButton, sf::IntRect(window.getSize().x-45, window.getSize().y-250, 60,60))){
                     return true;
                 }
                 if (event.type == Event::MouseButtonPressed)//если нажата клавиша мыши
@@ -102,11 +106,49 @@ bool startGame(RenderWindow &window, int menuNum){
                             }
                         } else chBox = -1;
                         if  (clickInRange(event.mouseButton, sf::IntRect(deck.posX, deck.posY, 75, 115))) {
-                            dealt(&a, &deck);
-                            soundDealt.play();
+                            if(deck.size>0){
+                                soundDealt.play();
+                                for(int i = 0;i<10; i++){
+                                    Card c = (deck).pop();
+                                    c.posX = deck.posX;
+                                    c.posY = deck.posY;
+                                    float borderX, borderY , To;
+                                    To = 2;
+                                    borderX = c.posX - a.box[i].pTop->item.posX;
+                                    if(c.posX > a.box[i].pTop->item.posX){
+                                        borderX = -borderX/To;
+                                    } else{
+                                        borderX = borderX/To;
+                                    }
+                                    borderY = (a.box[i].pTop->item.posY+20 - c.posY) / To;
+                                    for(int j = 0; j < To; j++){
+                                        c.posX += borderX;
+                                        c.posY +=borderY;
+                                        window.clear();
+                                        window.draw(m_background);
+                                        window.draw(deck.m_sprite);
+                                        window.draw(hintTile);
+                                        window.draw(restartTile);
+                                        drawStart(window,&a,0);
+                                        c.setTexture(c.m_path);
+                                        c.setPosition(c.posX,c.posY);
+                                        window.draw(c);
+                                        window.display();
+                                    }
+                                    a.box[i].Push(c);
+                                    if(c.value == 1){
+                                        checkPas(&a.box[i]);
+                                    }
+                                }
+                                if((deck).size<10){
+                                    deck.m_path="C:/Users/Asus/Desktop/spider/resource/cards/empty_card.png";
+                                    deck.setTexture(deck.m_path);
+                                }
+
+                            }
                         }
                         if(clickInRange(event.mouseButton, sf::IntRect(window.getSize().x-70, window.getSize().y-310,
-                                                                       window.getSize().x-40, window.getSize().y-300))){
+                                                                       60, 60))){
                             hintTile.setColor(Color(255,255,255,120));
                             hintAnim = hint(&a, window,&hintNode, hintTo);
                             if(!hintAnim){
@@ -127,23 +169,25 @@ bool startGame(RenderWindow &window, int menuNum){
                 if(hintAnim){
                     float borderX, borderY;
                     float To, sum;
+                    To = 10;
                     if(a.box[hintTo].pTop->item.posX>hintNode.bottom->item.posX){
                         borderX = a.box[hintTo].pTop->item.posX-hintNode.bottom->item.posX;
-                        To = borderX/20;
-                        borderX = 20;
+                        //To = borderX/20;
+                        borderX = borderX/To;
                     } else{
                         borderX = a.box[hintTo].pTop->item.posX - hintNode.bottom->item.posX;
-                        To = -borderX/20;
-                        borderX = -20;
+                        //To = -borderX/20;
+                        borderX = borderX/To;
                     }
                     borderY = (a.box[hintTo].pTop->item.posY + 20 - hintNode.bottom->item.posY) / To;
                     int i;
-                    for (i =0; i<=(int)To; i++){
+                    for (i =0; i<(int)To; i++){
                         window.clear();
                         window.draw(m_background);
                         window.draw(deck.m_sprite);
                         //  window.draw(convex);
                         window.draw(hintTile);
+                        window.draw(restartTile);
                         drawStart(window,&a,0);
                         hintNode.bottom->item.posX +=  borderX;
                         hintNode.bottom->item.posY += borderY;
@@ -163,7 +207,7 @@ bool startGame(RenderWindow &window, int menuNum){
                         }
                         window.display();
                     }
-                    sleep(milliseconds(20));
+                    sleep(milliseconds(100));
                     hintTile.setColor(Color(255,255,255,255));
                     hintAnim = false;
                     Chosen = false;
@@ -180,6 +224,25 @@ bool startGame(RenderWindow &window, int menuNum){
                                 contained = releasedInRange(pos, sf::IntRect(a.box[i].Check().posX-10, a.box[i].Check().posY-10, 100, 150));
                                 if (contained) {
                                     moved = move(col,&a.box[chBox], &a.box[i]);
+                                    if(moved && !a.box[chBox].pTop->item.visible){
+                                        Card c = a.box[chBox].pTop->item;
+                                        a.box[chBox].pTop->item.visible = true;
+                                        a.box[chBox].pTop->item.m_sprite.setScale(0.5, 1);
+                                        c.setPosition(c.posX, c.posY);
+                                        c.setTexture(c.path);
+                                        for(int i = 0; i<5; i++){
+                                            c.m_sprite.setScale(1-i*0.2, 1);
+                                            window.clear();
+                                            window.draw(m_background);
+                                            drawStart(window,&a, 0);
+                                            window.draw(deck.m_sprite);
+                                           // window.draw(convex);
+                                            window.draw(hintTile);
+                                            window.draw(restartTile);
+                                            window.draw(c);
+                                            window.display();
+                                        }
+                                    }
                                     break;
                                 }
                             }
@@ -188,6 +251,25 @@ bool startGame(RenderWindow &window, int menuNum){
                                     contained = releasedInRange(pos, sf::IntRect(a.box[i].Check().posX-10, a.box[i].Check().posY-10, 100, 150));
                                     if (contained) {
                                         moved = move(col, &a.box[chBox],&a.box[i]);
+                                        if(moved && !a.box[chBox].pTop->item.visible){
+                                            Card c = a.box[chBox].pTop->item;
+                                            a.box[chBox].pTop->item.visible = true;
+                                            a.box[chBox].pTop->item.m_sprite.setScale(0.5, 1);
+                                            c.setPosition(c.posX, c.posY);
+                                            c.setTexture(c.path);
+                                            for(int i = 0; i<5; i++){
+                                                c.m_sprite.setScale(1-i*0.2, 1);
+                                                window.clear();
+                                                window.draw(m_background);
+                                                drawStart(window,&a, 0);
+                                                window.draw(deck.m_sprite);
+                                              //  window.draw(convex);
+                                                window.draw(hintTile);
+                                                window.draw(restartTile);
+                                                window.draw(c);
+                                                window.display();
+                                            }
+                                        }
                                         break;
                                     }
                                 }
@@ -230,6 +312,7 @@ bool startGame(RenderWindow &window, int menuNum){
         window.draw(deck.m_sprite);
         window.draw(convex);
         window.draw(hintTile);
+        window.draw(restartTile);
         window.display();
         // sf::sleep(sf::milliseconds(20));
     }

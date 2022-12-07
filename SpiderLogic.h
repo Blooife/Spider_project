@@ -40,10 +40,10 @@ bool dealt(Box* a, Deck* deck){
         }
         if((*deck).size<10){
             deck->m_path="C:/Users/Asus/Desktop/spider/resource/cards/empty_card.png";
+            deck->setTexture(deck->m_path);
         }
         return true;
     } else{
-
         return false;
     }
 };
@@ -55,7 +55,7 @@ bool move(NodeStack* col, StackList* a, StackList* b){ //from a to b
         temp.Push(a->Pop());
     };
     temp.Push(a->Pop());
-    a->pTop->item.visible = true;
+   // a->pTop->item.visible = true;
 
         while (temp.pTop){
             b->Push(temp.Pop());
@@ -242,6 +242,18 @@ bool hint(Box *a,sf::RenderWindow &window,StackList* res, int &j){
     }
 
     return false;
+ }
+
+ void loadSounds(sf::Sound* soundDealt, sf::Sound &soundPlace, sf::Sound &soundSlide){
+     sf::SoundBuffer bufferDealt;
+     bufferDealt.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
+     (*soundDealt).setBuffer(bufferDealt);
+     sf::SoundBuffer bufferPlace;
+     bufferPlace.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardPlace.ogg");
+     soundPlace.setBuffer(bufferPlace);
+     sf::SoundBuffer bufferSlide;
+     bufferSlide.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardSlide.ogg");
+     soundSlide.setBuffer(bufferSlide);
  }
 
 #endif //SPIDER_SPIDERLOGIC_H
