@@ -357,7 +357,7 @@ int main() {
     sf::Image app_icon;
     //window.create(sf::VideoMode(1000, 600), "Spider", Style::Close);
     window.setVerticalSyncEnabled(true);
-    // window.setFramerateLimit(60);
+     window.setFramerateLimit(90);
     window.setKeyRepeatEnabled(false);
     app_icon.loadFromFile("C:/Users/Asus/Desktop/spider/resource/app_icon.bmp");
     window.setIcon(app_icon.getSize().x, app_icon.getSize().y, app_icon.getPixelsPtr());
