@@ -11,14 +11,22 @@
 
 using namespace sf;
 
-bool startGame(RenderWindow &window, int menuNum){
-
+bool startGame(RenderWindow &window){
+    int menuNum =menu(window);//вызов меню
+    Tile collected[8];
+    float x;
+    x = window.getSize().x - 920;
+    for(int i=0; i<8; i++){
+        collected[i].setPosition(x,window.getSize().y - 120);
+        x += 20;
+    }
+    int numCollected = 0;
     Deck deck;
     deck.SetupCards(menuNum);
     deck.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/card_back.bmp";
     deck.setTexture(deck.m_path);
     deck.posX = window.getSize().x-150;
-    deck.posY = window.getSize().y-150;
+    deck.posY = window.getSize().y-120;
     deck.setPosition(deck.posX,deck.posY);
     deck.setTexture(deck.m_path);
     Sound soundDealt;
@@ -133,11 +141,20 @@ bool startGame(RenderWindow &window, int menuNum){
                                         c.setTexture(c.m_path);
                                         c.setPosition(c.posX,c.posY);
                                         window.draw(c);
+                                        drawCollected(window, collected);
                                         window.display();
                                     }
                                     a.box[i].Push(c);
                                     if(c.value == 1){
-                                        checkPas(&a.box[i]);
+                                        if(checkPas(&a.box[i])){
+                                            for(int k = 0; k<12; k++){
+                                                a.box[i].Pop();
+                                            }
+                                            collected[numCollected].m_path = a.box[i].pTop->item.m_path;
+                                            a.box[i].Pop();
+                                            a.box[i].pTop->item.visible = true;
+                                            numCollected++;
+                                        }
                                     }
                                 }
                                 if((deck).size<10){
@@ -150,7 +167,7 @@ bool startGame(RenderWindow &window, int menuNum){
                         if(clickInRange(event.mouseButton, sf::IntRect(window.getSize().x-70, window.getSize().y-310,
                                                                        60, 60))){
                             hintTile.setColor(Color(255,255,255,120));
-                            hintAnim = hint(&a, window,&hintNode, hintTo);
+                            hintAnim = hint(&a, &hintNode, hintTo);
                             if(!hintAnim){
                                 if(deck.size>0){
                                     float startx = deck.posX, starty = deck.posY;
@@ -189,6 +206,7 @@ bool startGame(RenderWindow &window, int menuNum){
                         window.draw(hintTile);
                         window.draw(restartTile);
                         drawStart(window,&a,0);
+                        drawCollected(window, collected);
                         hintNode.bottom->item.posX +=  borderX;
                         hintNode.bottom->item.posY += borderY;
                         hintNode.bottom->item.setPosition(hintNode.bottom->item.posX,hintNode.bottom->item.posY);
@@ -224,13 +242,24 @@ bool startGame(RenderWindow &window, int menuNum){
                                 contained = releasedInRange(pos, sf::IntRect(a.box[i].Check().posX-10, a.box[i].Check().posY-10, 100, 150));
                                 if (contained) {
                                     moved = move(col,&a.box[chBox], &a.box[i]);
+                                    if(a.box[i].pTop->item.value==1){
+                                        if(checkPas(&a.box[i])){
+                                            for(int k = 0; k<12; k++){
+                                                a.box[i].Pop();
+                                            }
+                                            collected[numCollected].m_path = a.box[i].pTop->item.m_path;
+                                            a.box[i].Pop();
+                                            a.box[i].pTop->item.visible = true;
+                                            numCollected++;
+                                        }
+                                    }
                                     if(moved && !a.box[chBox].pTop->item.visible){
                                         Card c = a.box[chBox].pTop->item;
                                         c.setPosition(c.posX, c.posY);
                                         c.setTexture(c.path);
-                                        for(int i = 1; i<5; i++){
-                                            c.m_sprite.setScale(1-i*0.25, 1);
-                                            c.m_sprite.setPosition(c.m_sprite.getPosition().x + cardWidth*0.1,c.m_sprite.getPosition().y);
+                                        for(int i = 1; i<3; i++){
+                                            c.m_sprite.setScale(1-i*0.5, 1);
+                                            c.m_sprite.setPosition(c.m_sprite.getPosition().x + cardWidth*0.25,c.m_sprite.getPosition().y);
                                             window.clear();
                                             window.draw(m_background);
                                             drawStart(window,&a, 0);
@@ -238,14 +267,15 @@ bool startGame(RenderWindow &window, int menuNum){
                                             window.draw(hintTile);
                                             window.draw(restartTile);
                                             window.draw(c);
+                                            drawCollected(window, collected);
                                             window.display();
                                         }
                                         c.visible = true;
                                         c.m_path = a.box[chBox].pTop->item.m_path;
                                         c.setTexture(c.m_path);
-                                        for(int i = 1; i<5; i++){
-                                            c.m_sprite.setScale(0 +i*0.25, 1);
-                                            c.m_sprite.setPosition(c.m_sprite.getPosition().x - cardWidth*0.1,c.m_sprite.getPosition().y);
+                                        for(int i = 1; i<3; i++){
+                                            c.m_sprite.setScale(0 +i*0.5, 1);
+                                            c.m_sprite.setPosition(c.m_sprite.getPosition().x - cardWidth*0.25,c.m_sprite.getPosition().y);
                                             window.clear();
                                             window.draw(m_background);
                                             drawStart(window,&a, 0);
@@ -253,6 +283,7 @@ bool startGame(RenderWindow &window, int menuNum){
                                             window.draw(hintTile);
                                             window.draw(restartTile);
                                             window.draw(c.m_sprite);
+                                            drawCollected(window, collected);
                                             window.display();
                                         }
                                         a.box[chBox].pTop->item.visible = true;
@@ -265,13 +296,24 @@ bool startGame(RenderWindow &window, int menuNum){
                                     contained = releasedInRange(pos, sf::IntRect(a.box[i].Check().posX-10, a.box[i].Check().posY-10, 100, 150));
                                     if (contained) {
                                         moved = move(col, &a.box[chBox],&a.box[i]);
+                                        if(a.box[i].pTop->item.value==1){
+                                            if(checkPas(&a.box[i])){
+                                                for(int k = 0; k<12; k++){
+                                                    a.box[i].Pop();
+                                                }
+                                                collected[numCollected].m_path = a.box[i].pTop->item.m_path;
+                                                a.box[i].Pop();
+                                                a.box[i].pTop->item.visible = true;
+                                                numCollected++;
+                                            }
+                                        }
                                         if(moved && !a.box[chBox].pTop->item.visible){
                                             Card c = a.box[chBox].pTop->item;
                                             c.setPosition(c.posX, c.posY);
                                             c.setTexture(c.path);
-                                            for(int i = 1; i<5; i++){
-                                                c.m_sprite.setScale(1-i*0.25, 1);
-                                                c.m_sprite.setPosition(c.m_sprite.getPosition().x + cardWidth*0.1,c.m_sprite.getPosition().y);
+                                            for(int i = 1; i<3; i++){
+                                                c.m_sprite.setScale(1-i*0.5, 1);
+                                                c.m_sprite.setPosition(c.m_sprite.getPosition().x + cardWidth*0.25,c.m_sprite.getPosition().y);
                                                 window.clear();
                                                 window.draw(m_background);
                                                 drawStart(window,&a, 0);
@@ -279,14 +321,15 @@ bool startGame(RenderWindow &window, int menuNum){
                                                 window.draw(hintTile);
                                                 window.draw(restartTile);
                                                 window.draw(c);
+                                                drawCollected(window, collected);
                                                 window.display();
                                             }
                                             c.visible = true;
                                             c.m_path = a.box[chBox].pTop->item.m_path;
                                             c.setTexture(c.m_path);
-                                            for(int i = 1; i<5; i++){
-                                                c.m_sprite.setScale(0 +i*0.25, 1);
-                                                c.m_sprite.setPosition(c.m_sprite.getPosition().x - cardWidth*0.1,c.m_sprite.getPosition().y);
+                                            for(int i = 1; i<3; i++){
+                                                c.m_sprite.setScale(0 +i*0.5, 1);
+                                                c.m_sprite.setPosition(c.m_sprite.getPosition().x - cardWidth*0.25,c.m_sprite.getPosition().y);
                                                 window.clear();
                                                 window.draw(m_background);
                                                 drawStart(window,&a, 0);
@@ -294,6 +337,7 @@ bool startGame(RenderWindow &window, int menuNum){
                                                 window.draw(hintTile);
                                                 window.draw(restartTile);
                                                 window.draw(c.m_sprite);
+                                                drawCollected(window, collected);
                                                 window.display();
                                             }
                                             a.box[chBox].pTop->item.visible = true;
@@ -341,14 +385,14 @@ bool startGame(RenderWindow &window, int menuNum){
         window.draw(convex);
         window.draw(hintTile);
         window.draw(restartTile);
+        drawCollected(window, collected);
         window.display();
-        // sf::sleep(sf::milliseconds(20));
     }
 }
 
-void gameRunning(RenderWindow &window, int menuNum){
-    if(startGame(window, menuNum)){
-        gameRunning(window, menuNum);
+void gameRunning(RenderWindow &window){
+    if(startGame(window)){
+        gameRunning(window);
     }
 }
 
@@ -364,8 +408,8 @@ int main() {
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
     window.setPosition(sf::Vector2i(desktop.width / 2 - window.getSize().x/2, desktop.height/2 - window.getSize().y/2));
 
-    int menuNum =menu(window);//вызов меню
-    gameRunning(window, menuNum);
+
+    gameRunning(window);
     return 0;
 };
 

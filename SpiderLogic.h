@@ -19,10 +19,11 @@ bool checkPas(StackList* b){
         temp = temp->next;
     }
     if(i == 12){
-        for(int i = 0; i < 13; i++){
+        /*for(int i = 0; i < 13; i++){
             b->Pop();
         }
-        b->pTop->item.visible = true;
+        b->pTop->item.visible = true;*/
+
         return true;
     } else{
         return false;
@@ -61,9 +62,9 @@ bool move(NodeStack* col, StackList* a, StackList* b){ //from a to b
             b->Push(temp.Pop());
         }
         temp.pTop = nullptr;
-        if(b->pTop->item.value == 1) {
+        /*if(b->pTop->item.value == 1) {
             checkPas(b);
-        }
+        }*/
         return true;
     } else{
         return false;
@@ -199,7 +200,7 @@ int getColomn(sf::Vector2i  pixelPos, float x, float cardWidth){
     return -1;
 }
 
-bool hint(Box *a,sf::RenderWindow &window,StackList* res, int &j){
+bool hint(Box *a, StackList* res, int &j){
      NodeStack temp;
 
 //    res->pTop = nullptr;
@@ -244,16 +245,15 @@ bool hint(Box *a,sf::RenderWindow &window,StackList* res, int &j){
     return false;
  }
 
- void loadSounds(sf::Sound* soundDealt, sf::Sound &soundPlace, sf::Sound &soundSlide){
-     sf::SoundBuffer bufferDealt;
-     bufferDealt.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
-     (*soundDealt).setBuffer(bufferDealt);
-     sf::SoundBuffer bufferPlace;
-     bufferPlace.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardPlace.ogg");
-     soundPlace.setBuffer(bufferPlace);
-     sf::SoundBuffer bufferSlide;
-     bufferSlide.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardSlide.ogg");
-     soundSlide.setBuffer(bufferSlide);
+
+ void drawCollected(sf::RenderWindow &window, Tile* collected){
+
+ for(int i=0; i<8; i++){
+     if(!collected[i].m_path.empty()){
+         collected[i].setTexture(collected[i].m_path);
+        window.draw(collected[i].m_sprite);
+     }
  }
+ };
 
 #endif //SPIDER_SPIDERLOGIC_H
