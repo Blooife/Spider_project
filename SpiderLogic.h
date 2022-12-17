@@ -19,30 +19,6 @@ bool checkPas(StackList* b){
         temp = temp->next;
     }
     if(i == 12){
-        /*for(int i = 0; i < 13; i++){
-            b->Pop();
-        }
-        b->pTop->item.visible = true;*/
-
-        return true;
-    } else{
-        return false;
-    }
-};
-
-bool dealt(Box* a, Deck* deck){
-    if((*deck).size>0){
-        for(int i = 0;i<10; i++){
-            Card c = (*deck).pop();
-            a->box[i].Push(c);
-            if(c.value == 1){
-                checkPas(&a->box[i]);
-            }
-        }
-        if((*deck).size<10){
-            deck->m_path="C:/Users/Asus/Desktop/spider/resource/cards/empty_card.png";
-            deck->setTexture(deck->m_path);
-        }
         return true;
     } else{
         return false;
@@ -56,15 +32,10 @@ bool move(NodeStack* col, StackList* a, StackList* b){ //from a to b
         temp.Push(a->Pop());
     };
     temp.Push(a->Pop());
-   // a->pTop->item.visible = true;
-
         while (temp.pTop){
             b->Push(temp.Pop());
         }
         temp.pTop = nullptr;
-        /*if(b->pTop->item.value == 1) {
-            checkPas(b);
-        }*/
         return true;
     } else{
         return false;
@@ -126,19 +97,6 @@ void drawStart(sf::RenderWindow &window, Box* a, int chBox){
                 temp = temp->prev;
             }
         }
-        /*if(col){
-            col->item.setPosition(col->item.posX, col->item.posY);
-            col->item.setTexture(col->item.m_path);
-            window.draw(col->item.m_sprite);
-        }*/
-
-       /* for (int i = 0; i < 10; i++) {
-            Card *c = &a.box[i].pTop->item;
-            (*c).visible = true;
-            (*c).setTexture((*c).m_path);
-            (*c).setPosition((*c).posX, (*c).posY);
-            window.draw((*c).m_sprite);
-        }*/
 };
  sf::ConvexShape setColorIfCardChosen(NodeStack* col, float width, float height){
 
@@ -160,11 +118,6 @@ void drawStart(sf::RenderWindow &window, Box* a, int chBox){
      convex.setPoint(3, sf::Vector2f(startx, starty+y));
      convex.setFillColor(sf::Color(0,0,0,0));
      convex.setOutlineColor(sf::Color(0,0,0,100));
-    /* sf::Vector2f size;
-     size.x = cardWidth;
-     size.y = y;
-     chTile.setSize(size);
-     chTile.setOutlineColor(sf::Color(0,0,0,100));*/
      return convex;
  }
 bool clickInRange(sf::Event::MouseButtonEvent event, sf::IntRect rect)
@@ -202,12 +155,8 @@ int getColomn(sf::Vector2i  pixelPos, float x, float cardWidth){
 
 bool hint(Box *a, StackList* res, int &j){
      NodeStack temp;
-
-//    res->pTop = nullptr;
- //   res->bottom = nullptr;
      for(int i =0; i<10; i++){
          temp = *a->box[i].pTop;
-         // float x= temp.item.posX, y = temp.item.posY;
          while (temp.item.visible && canDrag(temp)){
              temp = *temp.next;
          }
@@ -216,27 +165,13 @@ bool hint(Box *a, StackList* res, int &j){
             if(i==j){
                 continue;
             }
-
                 bool isAbleToMove = canMove(temp, &a->box[j]);
                 if (isAbleToMove) {
                     temp = *temp.next;
                     while (temp.prev) {
-                       /* NodeStack *p = new NodeStack;
-                        p->item.m_sprite = temp.prev->item.m_sprite;
-                        p->item.posX = temp.prev->item.posX;
-                        p->item.posY = temp.prev->item.posY;
-                        p->item.suit = temp.prev->item.suit;
-                        p->item.value = temp.prev->item.value;
-                        p->item.m_path = temp.prev->item.m_path;
-                      //  res.prev = p;
-                       // res.next = &res;
-                        res = *res.prev;
-                        p->prev = temp.prev->prev;
-                        temp.prev = p;*/
                         res->Push(temp.prev->item);
                         temp = *temp.prev;
                     }
-                    //temp = k;
                     return true;
                 }
             }
@@ -255,5 +190,6 @@ bool hint(Box *a, StackList* res, int &j){
      }
  }
  };
+
 
 #endif //SPIDER_SPIDERLOGIC_H

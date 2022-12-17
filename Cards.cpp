@@ -53,8 +53,6 @@ struct NodeStack
     NodeStack* next, *prev;
 };
 
-// Шаблонный класс Стек на базе односвязного списка
-
 class StackList
 {
 private:
@@ -67,8 +65,7 @@ public:
     StackList() { pTop = nullptr; bottom = nullptr; }
     // поместить элемент в стек
     // элемент помещается на начало списка
-    void Push(Card item)
-    {
+    void Push(Card item)    {
         NodeStack* p;
         p = new NodeStack;
         p->item = item;
@@ -113,7 +110,9 @@ public:
                 count++;
                 p = p->next;
             }
+            return count;
         }
+
     }
     void Empty()
     {
@@ -137,9 +136,7 @@ public:
         //Empty();
         NodeStack* p; // дополнительный указатель
         NodeStack* p2;
-
         p = pTop;
-
         while (p != nullptr)
         {
             p2 = p; // сделать копию из p
@@ -234,12 +231,13 @@ struct Deck: public Tile
 
     void shuffle(){
         srand(time(NULL));
-        for(int i = 0; i < size; i++){
-            int k = rand() % size;
+        int n;
+        for(int i = size-1; i >= 0; i--){
+            n = rand() % (i+1) ;
             int l = rand() % size;
-            Card temp = arrCards[k];
-            arrCards[k] = arrCards[l];
-            arrCards[l] = temp;
+            Card temp = arrCards[n];
+            arrCards[n] = arrCards[i];
+            arrCards[i] = temp;
         }
 
         for(int i = 103; i>59;i--){
@@ -251,7 +249,6 @@ struct Deck: public Tile
         size -= 1;
         return arrCards[size];
     };
-
 
 };
 
@@ -281,14 +278,15 @@ public:
              box[i].Push((*deck).pop());
          }
      }
-    Box& operator=(const Box* a)
-    {
-        for(int i =0; i<10; i++){
-            this->box[i].pTop = a->box[i].pTop;
-            this->box[i].bottom = a->box[i].bottom;
-        }
-        return *this;
-    }
+
+     Box& operator=(const Box* a){
+         for(int i =0; i<10; i++){
+             this->box[i].pTop = a->box[i].pTop;
+             this->box[i].bottom = a->box[i].bottom;
+         }
+
+     }
+
 };
 
 
