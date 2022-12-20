@@ -11,20 +11,23 @@
 #include "Tile.h"
 //using namespace sf;
 int menu(sf::RenderWindow & window) {
-    sf::Texture menuTexture1, menuTexture2,menuTexture3;
+    sf::Texture menuTexture1, menuTexture2,menuTexture3, savedTexture;
 
     menuTexture1.loadFromFile("C:/Users/Asus/Desktop/spider/resource/easy.png");
     menuTexture2.loadFromFile("C:/Users/Asus/Desktop/spider/resource/medium.png");
     menuTexture3.loadFromFile("C:/Users/Asus/Desktop/spider/resource/hard.png");
-    sf::Sprite menu1(menuTexture1), menu2(menuTexture2),menu3(menuTexture3);
-    bool isMenu = 1;
+    savedTexture.loadFromFile("C:\\Users\\Asus\\Desktop\\spider\\resource\\saved.png");
+    sf::Sprite menu1(menuTexture1), menu2(menuTexture2),menu3(menuTexture3), saved(savedTexture);
+    bool isMenu = true;
     int menuNum = 0;
     unsigned  int x1 = window.getSize().x /2 - menuTexture1.getSize().x /2;
     unsigned  int x2 = window.getSize().x /2 - menuTexture2.getSize().x /2;
     unsigned  int x3 = window.getSize().x /2 - menuTexture3.getSize().x /2;
+    unsigned int x4 = window.getSize().x /2 - savedTexture.getSize().x /2;
     menu1.setPosition((float)x1, 120);
     menu2.setPosition((float)x2, 220);
     menu3.setPosition((float)x3, 320);
+    saved.setPosition((float)x4, 420);
 
     //////////////////////////////МЕНЮ///////////////////
     while (isMenu)
@@ -37,6 +40,7 @@ int menu(sf::RenderWindow & window) {
         menu1.setColor(sf::Color::White);
         menu2.setColor(sf::Color::White);
         menu3.setColor(sf::Color::White);
+        saved.setColor(sf::Color::White);
         menuNum = 0;
         window.clear(sf::Color(0, 49, 83));
 
@@ -49,15 +53,19 @@ int menu(sf::RenderWindow & window) {
         if (sf::IntRect(x3, 320, 300, 70).contains(sf::Mouse::getPosition(window))) {
             menu3.setColor(sf::Color::Black);
             menuNum = 3; }
+        if (sf::IntRect(x4, 420, 300, 70).contains(sf::Mouse::getPosition(window))) {
+            saved.setColor(sf::Color::Black);
+            menuNum = 4; }
 
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
         {
-            if(menuNum==1 || menuNum == 2 || menuNum == 3)
+            if(menuNum==1 || menuNum == 2 || menuNum == 3 || menuNum == 4)
             isMenu = false;//если нажали первую кнопку, то выходим из меню
         }
         window.draw(menu1);
         window.draw(menu2);
         window.draw(menu3);
+        window.draw(saved);
         window.display();
     }
     return menuNum;

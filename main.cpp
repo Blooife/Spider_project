@@ -19,42 +19,25 @@ bool startGame(RenderWindow &window){
         collected[i].setPosition(x,window.getSize().y - 120);
         x += 20;
     }
-    int numCollected = 0;
     Deck deck;
-    deck.SetupCards(menuNum);
+    Box a;
+    int numCollected = 0;
+    if(menuNum == 4){
+        readBox(&a);
+        readDeck(&deck);
+        numCollected = readCollected(collected);
+    } else{
+        deck.SetupCards(menuNum);
+        deck.shuffle();
+        a.init(&deck, window.getSize().x % 10 + 50, cardWidth+20);
+    }
+
     deck.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/card_back.bmp";
     deck.setTexture(deck.m_path);
     deck.posX = window.getSize().x-150;
     deck.posY = window.getSize().y-120;
     deck.setPosition(deck.posX,deck.posY);
-    deck.setTexture(deck.m_path);
-    Sound soundDealt;
-    Sound soundPlace;
-    Sound soundSlide;
-    sf::SoundBuffer bufferDealt;
-    bufferDealt.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
-    soundDealt.setBuffer(bufferDealt);
-    sf::SoundBuffer bufferPlace;
-    bufferPlace.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardPlace.ogg");
-    soundPlace.setBuffer(bufferPlace);
-    sf::SoundBuffer bufferSlide;
-    bufferSlide.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardSlide.ogg");
-    soundSlide.setBuffer(bufferSlide);
-    Tile hintTile;
-    hintTile.m_path = "C:/Users/Asus/Desktop/spider/resource/hint.png";
-    hintTile.setTexture(hintTile.m_path);
-    hintTile.setPosition(window.getSize().x-50, window.getSize().y-300);
-    Tile restartTile;
-    restartTile.m_path = "C:/Users/Asus/Desktop/spider/resource/icons/refresh1.bmp";
-    restartTile.setTexture(restartTile.m_path);
-    restartTile.setPosition(window.getSize().x-45, window.getSize().y-250);
-    Tile back;
-    back.m_path = "C:/Users/Asus/Desktop/spider/resource/icons/back.png";
-    back.setTexture(back.m_path);
-    back.setPosition(window.getSize().x-45, window.getSize().y-200);
-    deck.shuffle();
-    Box a;
-    a.init(&deck, window.getSize().x % 10 + 50, cardWidth+20);
+
     StackList prev[10];
     for(int i = 0; i<10; i++){
         NodeStack* temp = a.box[i].bottom;
@@ -63,7 +46,28 @@ bool startGame(RenderWindow &window){
             temp = temp->prev;
         }
     }
-    Tile m_background;
+    ////////////////////////////////////////////////////////////////////////////////
+    Sound soundDealt, soundPlace, soundSlide;
+    sf::SoundBuffer bufferDealt, bufferPlace, bufferSlide;
+    Tile hintTile, back, exitTile, restartTile, m_background;
+    bufferDealt.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
+    soundDealt.setBuffer(bufferDealt);
+    bufferPlace.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardPlace.ogg");
+    soundPlace.setBuffer(bufferPlace);
+    bufferSlide.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardSlide.ogg");
+    soundSlide.setBuffer(bufferSlide);
+    hintTile.m_path = "C:/Users/Asus/Desktop/spider/resource/hint.png";
+    hintTile.setTexture(hintTile.m_path);
+    hintTile.setPosition(window.getSize().x-50, window.getSize().y-300);
+    restartTile.m_path = "C:/Users/Asus/Desktop/spider/resource/icons/refresh.png";
+    restartTile.setTexture(restartTile.m_path);
+    restartTile.setPosition(window.getSize().x-45, window.getSize().y-250);
+    back.m_path = "C:/Users/Asus/Desktop/spider/resource/icons/back.png";
+    back.setTexture(back.m_path);
+    back.setPosition(window.getSize().x-45, window.getSize().y-200);
+    exitTile.m_path = "C:\\Users\\Asus\\Desktop\\spider\\resource\\icons\\exit.png";
+    exitTile.setTexture(exitTile.m_path);
+    exitTile.setPosition(window.getSize().x-45, window.getSize().y-590);
     m_background.setTexture("C:/Users/Asus/Desktop/spider/resource/backgrounds/back_img.jpg");
     sf::ConvexShape convex;
     convex.setPointCount(4);
@@ -72,13 +76,14 @@ bool startGame(RenderWindow &window){
     convex.setOutlineColor(sf::Color(0,0,0,0));
     bool isMove = false;
     bool Chosen = false;
+    int moveBack = 0;
     int chBox=-1;
     bool hintAnim=false;
+    //////////////////////////////////////////////////////////////////////////////
     while (window.isOpen()) {
         sf::Event event;
         int dX;
         int dY;
-        //soundDealt.play();
         while (window.pollEvent(event)){
             if(event.type == sf::Event::Closed){
                 window.close();
@@ -86,8 +91,14 @@ bool startGame(RenderWindow &window){
                 NodeStack* col;
                 StackList hintNode;
                 int hintTo;
-                if(clickInRange(event.mouseButton, sf::IntRect(window.getSize().x-45, window.getSize().y-250, 60,60))){
+                if(clickInRange(event.mouseButton, sf::IntRect(window.getSize().x-45, window.getSize().y-250, 50,50))){
                     return true;
+                }
+                if(clickInRange(event.mouseButton, sf::IntRect(window.getSize().x-45, window.getSize().y-590, 50,50))){
+                    saveToFileBox(&a);
+                    saveToFileDeck(&deck);
+                    saveToFileCollected(collected, numCollected);
+                    return false;
                 }
                 if (event.type == Event::MouseButtonPressed)//если нажата клавиша мыши
                     if (event.key.code == Mouse::Left) {
@@ -124,7 +135,10 @@ bool startGame(RenderWindow &window){
                                                 }
                                                 temp = temp->prev;
                                             }
+                                            moveBack  = 0;
                                         }
+                                        //saveCurCond(a, prev);
+                                        moveBack  = 0;
                                         soundSlide.play();
                                         chBox = i;
                                         dX = col->item.posX;
@@ -145,6 +159,27 @@ bool startGame(RenderWindow &window){
                         } else chBox = -1;
                         if  (clickInRange(event.mouseButton, sf::IntRect(deck.posX, deck.posY, 75, 115))) {
                             if(deck.size>0){
+                                for(int j = 0; j<10; j++){
+                                    NodeStack* temp = a.box[j].bottom;
+                                    NodeStack* pr = prev[j].bottom;
+                                    if(a.box[j].Count() < prev[j].Count()){
+                                        int k = - a.box[j].Count() + prev[j].Count();
+                                        while(k > 0){
+                                            prev[j].Pop();
+                                            k--;
+                                        }
+                                    }
+                                    while (temp){
+                                        if(pr){
+                                            pr->item = temp->item;
+                                            pr = pr->prev;
+                                        }else{
+                                            prev[j].Push(temp->item);
+                                        }
+                                        temp = temp->prev;
+                                    }
+                                    moveBack = 1;
+                                }
                                 soundDealt.play();
                                 for(int i = 0;i<10; i++){
                                     Card c = (deck).pop();
@@ -172,6 +207,7 @@ bool startGame(RenderWindow &window){
                                         c.setTexture(c.m_path);
                                         c.setPosition(c.posX,c.posY);
                                         window.draw(c);
+                                        window.draw(exitTile);
                                         drawCollected(window, collected);
                                         window.display();
                                     }
@@ -216,8 +252,6 @@ bool startGame(RenderWindow &window){
                             for(int j = 0; j<10; j++){
                                 NodeStack* temp = a.box[j].bottom;
                                 NodeStack* pr = prev[j].bottom;
-                                int g = a.box[j].Count();
-                                int b = prev[j].Count();
                                 if(a.box[j].Count() > prev[j].Count()){
                                     int k = a.box[j].Count() - prev[j].Count();
                                     while(k> 0){
@@ -236,6 +270,18 @@ bool startGame(RenderWindow &window){
 
                                 }
                             }
+                            if(moveBack == 1){
+                                deck.size += 10;
+                            } else if(moveBack == 2){
+                                numCollected--;
+                                for(int i = 0; i<8; i++){
+                                    if(collected[i].m_path.empty()){
+                                        collected[i-1].m_path = "";
+                                        break;
+                                    }
+                                }
+                            }
+                            Chosen = false;
                            convex.setOutlineThickness(0);
                         }
                     }
@@ -262,6 +308,7 @@ bool startGame(RenderWindow &window){
                         window.draw(hintTile);
                         window.draw(restartTile);
                         window.draw(back);
+                        window.draw(exitTile);
                         drawStart(window,&a,0);
                         drawCollected(window, collected);
                         hintNode.bottom->item.posX +=  borderX;
@@ -301,6 +348,7 @@ bool startGame(RenderWindow &window){
                                     moved = move(col,&a.box[chBox], &a.box[i]);
                                     if(a.box[i].pTop->item.value==1){
                                         if(checkPas(&a.box[i])){
+                                            moveBack = 2;
                                             for(int k = 0; k<12; k++){
                                                 a.box[i].Pop();
                                             }
@@ -326,6 +374,7 @@ bool startGame(RenderWindow &window){
                                             window.draw(restartTile);
                                             window.draw(back);
                                             window.draw(c);
+                                            window.draw(exitTile);
                                             drawCollected(window, collected);
                                             window.display();
                                         }
@@ -342,6 +391,7 @@ bool startGame(RenderWindow &window){
                                             window.draw(hintTile);
                                             window.draw(restartTile);
                                             window.draw(back);
+                                            window.draw(exitTile);
                                             window.draw(c.m_sprite);
                                             drawCollected(window, collected);
                                             window.display();
@@ -358,6 +408,7 @@ bool startGame(RenderWindow &window){
                                         moved = move(col, &a.box[chBox],&a.box[i]);
                                         if(a.box[i].pTop->item.value==1){
                                             if(checkPas(&a.box[i])){
+                                                moveBack = 2;
                                                 for(int k = 0; k<12; k++){
                                                     a.box[i].Pop();
                                                 }
@@ -383,6 +434,7 @@ bool startGame(RenderWindow &window){
                                                 window.draw(restartTile);
                                                 window.draw(back);
                                                 window.draw(c);
+                                                window.draw(exitTile);
                                                 drawCollected(window, collected);
                                                 window.display();
                                             }
@@ -394,13 +446,14 @@ bool startGame(RenderWindow &window){
                                                 c.m_sprite.setPosition(c.m_sprite.getPosition().x - cardWidth*0.25,c.m_sprite.getPosition().y);
                                                 window.clear();
                                                 window.draw(m_background);
-                                                drawStart(window,&a, 0);
                                                 window.draw(deck.m_sprite);
                                                 window.draw(hintTile);
                                                 window.draw(restartTile);
                                                 window.draw(back);
                                                 window.draw(c.m_sprite);
+                                                window.draw(exitTile);
                                                 drawCollected(window, collected);
+                                                drawStart(window,&a, 0);
                                                 window.display();
                                             }
                                             a.box[chBox].pTop->item.visible = true;
@@ -442,13 +495,14 @@ bool startGame(RenderWindow &window){
         }
         window.clear();
         window.draw(m_background);
-        drawStart(window, &a, chBox);
         window.draw(deck.m_sprite);
-        window.draw(convex);
         window.draw(hintTile);
         window.draw(restartTile);
         drawCollected(window, collected);
         window.draw(back);
+        window.draw(exitTile);
+        drawStart(window, &a, chBox);
+        window.draw(convex);
         window.display();
     }
 }

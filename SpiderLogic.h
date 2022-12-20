@@ -157,24 +157,26 @@ bool hint(Box *a, StackList* res, int &j){
      NodeStack temp;
      for(int i =0; i<10; i++){
          temp = *a->box[i].pTop;
-         while (temp.item.visible && canDrag(temp)){
-             temp = *temp.next;
+         if(temp.item.value != 0){
+             while (temp.item.visible && canDrag(temp)){
+                 temp = *temp.next;
+             }
+             temp = *temp.prev;
+             for(j = 0; j < 10; j++){
+                 if(i==j){
+                     continue;
+                 }
+                 bool isAbleToMove = canMove(temp, &a->box[j]);
+                 if (isAbleToMove) {
+                     temp = *temp.next;
+                     while (temp.prev) {
+                         res->Push(temp.prev->item);
+                         temp = *temp.prev;
+                     }
+                     return true;
+                 }
+             }
          }
-         temp = *temp.prev;
-        for(j = 0; j < 10; j++){
-            if(i==j){
-                continue;
-            }
-                bool isAbleToMove = canMove(temp, &a->box[j]);
-                if (isAbleToMove) {
-                    temp = *temp.next;
-                    while (temp.prev) {
-                        res->Push(temp.prev->item);
-                        temp = *temp.prev;
-                    }
-                    return true;
-                }
-            }
     }
 
     return false;
@@ -191,5 +193,132 @@ bool hint(Box *a, StackList* res, int &j){
  }
  };
 
+ void saveCurCond(Box a, StackList* prev){
+     for(int j = 0; j<10; j++){
+         NodeStack* temp = a.box[j].bottom;
+         NodeStack* pr = prev[j].bottom;
+         if(a.box[j].Count() < prev[j].Count()){
+             int k = - a.box[j].Count() + prev[j].Count();
+             while(k > 0){
+                 prev[j].Pop();
+                 k--;
+             }
+         }
+         while (temp){
+             if(pr){
+                 pr->item = temp->item;
+                 pr = pr->prev;
+             }else{
+                 prev[j].Push(temp->item);
+             }
+             temp = temp->prev;
+         }
+     }
+ }
+
+ void saveToFileCollected(Tile collected[8],int size){
+     FILE* file;
+     file = fopen("C:\\Users\\Asus\\Desktop\\spider\\someInfo", "w");
+     fprintf(file, "%d\n", size);
+     for(int i = 0; i<size; i++){
+         fprintf(file,"%s\n", collected[i].m_path.c_str());
+     }
+     fclose(file);
+ }
+
+int readCollected(Tile collected[8]){
+     FILE* file;
+     file = fopen("C:\\Users\\Asus\\Desktop\\spider\\someInfo", "r");
+     if(file){
+         int size;
+         fscanf(file, "%d\n", &size);
+         for(int i = 0; i<size; i++){
+             char s[200];
+             fscanf(file, "%s\n", &s);
+             collected[i].m_path = s;
+         }
+         fclose(file);
+         return size;
+     } else return -1;
+ }
+
+ void saveToFileBox(Box* a){
+     FILE* box;
+     box = fopen("C:\\Users\\Asus\\Desktop\\spider\\box.txt", "w");
+     if(box)
+     for(int i = 0; i < 10; i++){
+         NodeStack * temp = a->box[i].bottom->prev;
+         fprintf(box, "%d\n", a->box[i].Count());
+         fprintf(box, "%f\n", a->box[i].bottom->item.posX);
+         fprintf(box, "%f\n", a->box[i].bottom->item.posY);
+         while(temp){
+             fprintf(box, "%d\n", temp->item.value);
+             fprintf(box, "%d\n", (CardNames)temp->item.name);
+             fprintf(box, "%d\n%d\n", (int)temp->item.visible, (Suits)temp->item.suit);
+             temp = temp->prev;
+            // a->box[i].Pop();
+         }
+     }
+     fclose(box);
+ }
+
+ void saveToFileDeck(Deck* deck){
+     FILE* fdeck;
+     fdeck = fopen("C:\\Users\\Asus\\Desktop\\spider\\deck.txt", "w");
+     if(fdeck)
+     {
+         fprintf(fdeck, "%d\n", deck->size);
+         int i = deck->size-1;
+         while (i >= 0){
+             fprintf(fdeck, "%d\n", deck->arrCards[i].value);
+             fprintf(fdeck, "%d\n", (CardNames)deck->arrCards[i].name);
+             fprintf(fdeck, "%d\n%d\n", (int)deck->arrCards[i].visible, (Suits)deck->arrCards[i].suit);
+             i--;
+         }
+     }
+ }
+
+void readDeck(Deck* deck){
+    FILE* fdeck;
+    fdeck = fopen("C:\\Users\\Asus\\Desktop\\spider\\deck.txt", "r");
+    if(fdeck)
+    {
+        fscanf(fdeck, "%d\n", &deck->size);
+        int i = deck->size-1;
+        while (i >= 0){
+            fscanf(fdeck, "%d\n", &deck->arrCards[i].value);
+            fscanf(fdeck, "%d\n", &deck->arrCards[i].name);
+            fscanf(fdeck, "%d\n%d\n", &deck->arrCards[i].visible, &deck->arrCards[i].suit);
+            deck->arrCards[i].m_path = "C:/Users/Asus/Desktop/spider/resource/cards/card" +
+                    std::to_string((int)deck->arrCards[i].suit)+std::to_string((int)deck->arrCards[i].name)+".bmp";
+            deck->arrCards[i].setTexture(deck->arrCards[i].m_path);
+            i--;
+        }
+    }
+}
+ void readBox(Box* a){
+     FILE* box;
+     box = fopen("C:\\Users\\Asus\\Desktop\\spider\\box.txt", "r");
+     auto * temp = new NodeStack;
+     temp->item.path = "C:/Users/Asus/Desktop/spider/resource/cards/card_back.bmp";
+     for(int i = 0; i < 10; i++){
+         int count;
+         fscanf(box, "%d", &count);
+         count--;
+         Card c = c.emptyCard();
+         fscanf(box, "%f", &c.posX);
+         fscanf(box, "%f", &c.posY);
+         a->box[i].Push(c);
+         for(count; count > 0; count --){
+             fscanf(box, "%d", &temp->item.value);
+             fscanf(box, "%d",  &temp->item.name);
+             fscanf(box, "%d", &temp->item.visible);
+             fscanf(box, "%d", &temp->item.suit);
+             temp->item.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/card" + std::to_string((int)temp->item.suit)+std::to_string((int)temp->item.name)+".bmp";
+             a->box[i].Push(temp->item);
+         }
+     }
+     fclose(box);
+ }
 
 #endif //SPIDER_SPIDERLOGIC_H
