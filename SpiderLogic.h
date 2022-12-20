@@ -155,6 +155,8 @@ int getColomn(sf::Vector2i  pixelPos, float x, float cardWidth){
 
 bool hint(Box *a, StackList* res, int &j){
      NodeStack temp;
+     res->pTop= nullptr;
+     res->bottom = nullptr;
      for(int i =0; i<10; i++){
          temp = *a->box[i].pTop;
          if(temp.item.value != 0){
@@ -216,17 +218,18 @@ bool hint(Box *a, StackList* res, int &j){
      }
  }
 
- void saveToFileCollected(Tile collected[8],int size){
+ void saveToFileCollected(Tile collected[8],int size, int score){
      FILE* file;
      file = fopen("C:\\Users\\Asus\\Desktop\\spider\\someInfo", "w");
      fprintf(file, "%d\n", size);
      for(int i = 0; i<size; i++){
          fprintf(file,"%s\n", collected[i].m_path.c_str());
      }
+     fprintf(file, "%d\n", score);
      fclose(file);
  }
 
-int readCollected(Tile collected[8]){
+int readCollected(Tile collected[8], int *score){
      FILE* file;
      file = fopen("C:\\Users\\Asus\\Desktop\\spider\\someInfo", "r");
      if(file){
@@ -237,6 +240,7 @@ int readCollected(Tile collected[8]){
              fscanf(file, "%s\n", &s);
              collected[i].m_path = s;
          }
+         fscanf(file, "%d\n", score);
          fclose(file);
          return size;
      } else return -1;

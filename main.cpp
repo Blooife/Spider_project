@@ -21,19 +21,26 @@ bool startGame(RenderWindow &window){
     }
     Deck deck;
     Box a;
+    int score;
     int numCollected = 0;
     if(menuNum == 4){
         readBox(&a);
         readDeck(&deck);
-        numCollected = readCollected(collected);
+        if(deck.size < 10){
+            deck.m_path="C:/Users/Asus/Desktop/spider/resource/cards/empty_card.png";
+            deck.setTexture(deck.m_path);
+        }
+        numCollected = readCollected(collected, &score);
     } else{
         deck.SetupCards(menuNum);
         deck.shuffle();
+        deck.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/card_back.bmp";
+        deck.setTexture(deck.m_path);
         a.init(&deck, window.getSize().x % 10 + 50, cardWidth+20);
+        score = 500;
     }
 
-    deck.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/card_back.bmp";
-    deck.setTexture(deck.m_path);
+
     deck.posX = window.getSize().x-150;
     deck.posY = window.getSize().y-120;
     deck.setPosition(deck.posX,deck.posY);
@@ -49,7 +56,16 @@ bool startGame(RenderWindow &window){
     ////////////////////////////////////////////////////////////////////////////////
     Sound soundDealt, soundPlace, soundSlide;
     sf::SoundBuffer bufferDealt, bufferPlace, bufferSlide;
-    Tile hintTile, back, exitTile, restartTile, m_background;
+    Tile hintTile, back, exitTile, restartTile, m_background, volume, win;
+    Text scoreText;
+    Font font;
+    font.loadFromFile("C:\\Users\\Asus\\Desktop\\spider\\resource\\lato-light.ttf");
+    scoreText.setPosition(window.getSize().x-850, window.getSize().y-598);
+    scoreText.setFont(font);
+    scoreText.setFillColor(Color::Black);
+    scoreText.setCharacterSize(23);
+    scoreText.setStyle(Text::Bold);
+    scoreText.setString("Score" + to_string(score));
     bufferDealt.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/dealt.ogg");
     soundDealt.setBuffer(bufferDealt);
     bufferPlace.loadFromFile("C:/Users/Asus/Desktop/spider/resource/sounds/cardPlace.ogg");
@@ -61,13 +77,16 @@ bool startGame(RenderWindow &window){
     hintTile.setPosition(window.getSize().x-50, window.getSize().y-300);
     restartTile.m_path = "C:/Users/Asus/Desktop/spider/resource/icons/refresh.png";
     restartTile.setTexture(restartTile.m_path);
-    restartTile.setPosition(window.getSize().x-45, window.getSize().y-250);
+    restartTile.setPosition(window.getSize().x-50, window.getSize().y-250);
+    volume.setPosition(window.getSize().x-50, window.getSize().y-350);
+    volume.m_path = "C:\\Users\\Asus\\Desktop\\spider\\resource\\icons\\volume.png";
+    volume.setTexture(volume.m_path);
     back.m_path = "C:/Users/Asus/Desktop/spider/resource/icons/back.png";
     back.setTexture(back.m_path);
-    back.setPosition(window.getSize().x-45, window.getSize().y-200);
+    back.setPosition(window.getSize().x-50, window.getSize().y-200);
     exitTile.m_path = "C:\\Users\\Asus\\Desktop\\spider\\resource\\icons\\exit.png";
     exitTile.setTexture(exitTile.m_path);
-    exitTile.setPosition(window.getSize().x-45, window.getSize().y-590);
+    exitTile.setPosition(window.getSize().x-50, window.getSize().y-590);
     m_background.setTexture("C:/Users/Asus/Desktop/spider/resource/backgrounds/back_img.jpg");
     sf::ConvexShape convex;
     convex.setPointCount(4);
@@ -97,11 +116,37 @@ bool startGame(RenderWindow &window){
                 if(clickInRange(event.mouseButton, sf::IntRect(window.getSize().x-45, window.getSize().y-590, 50,50))){
                     saveToFileBox(&a);
                     saveToFileDeck(&deck);
-                    saveToFileCollected(collected, numCollected);
+                    saveToFileCollected(collected, numCollected, score);
                     return false;
                 }
+
                 if (event.type == Event::MouseButtonPressed)//если нажата клавиша мыши
                     if (event.key.code == Mouse::Left) {
+                        if(clickInRange(event.mouseButton, sf::IntRect(window.getSize().x-45, window.getSize().y-350, 50,50))){
+                            if(volume.m_path == "C:\\Users\\Asus\\Desktop\\spider\\resource\\icons\\volume_off.png"){
+                                volume.m_path = "C:\\Users\\Asus\\Desktop\\spider\\resource\\icons\\volume.png";
+                                volume.setTexture(volume.m_path);
+                                soundSlide.setVolume(100);
+                                soundPlace.setVolume(100);
+                                soundDealt.setVolume(100);
+                            }else{
+                                volume.m_path = "C:\\Users\\Asus\\Desktop\\spider\\resource\\icons\\volume_off.png";
+                                volume.setTexture(volume.m_path);
+                                soundSlide.setVolume(0);
+                                soundPlace.setVolume(0);
+                                soundDealt.setVolume(0);
+                            }
+                            Chosen = false;
+                            convex.setOutlineThickness(0);
+                        }
+                        if(deck.size == 0){
+                            if(!hint(&a, &hintNode, hintTo)){
+                                win.m_path = "C:\\Users\\Asus\\Desktop\\spider\\resource\\lost.png";
+                                win.setTexture(win.m_path);
+                                win.setPosition(100,150);
+                                win.m_sprite.setColor(sf::Color(255,255,255,255));
+                            }
+                        }
                         sf::Vector2i clickPos = sf::Mouse::getPosition(window);
                         int i = getColomn(clickPos,window.getSize().x % 10 + 50, cardWidth+20);
                         if(i> -1) {
@@ -199,16 +244,19 @@ bool startGame(RenderWindow &window){
                                         c.posY +=borderY;
                                         window.clear();
                                         window.draw(m_background);
+                                        window.draw(volume);
                                         window.draw(deck.m_sprite);
                                         window.draw(hintTile);
                                         window.draw(restartTile);
                                         window.draw(back);
-                                        drawStart(window,&a,0);
                                         c.setTexture(c.m_path);
                                         c.setPosition(c.posX,c.posY);
+                                        drawStart(window,&a,0);
                                         window.draw(c);
+                                        window.draw(scoreText);
                                         window.draw(exitTile);
                                         drawCollected(window, collected);
+
                                         window.display();
                                     }
                                     a.box[i].Push(c);
@@ -270,6 +318,10 @@ bool startGame(RenderWindow &window){
 
                                 }
                             }
+                            score--;
+                            scoreText.setString("Score " + to_string(score));
+                            win.m_sprite.setColor(sf::Color(0,0,0,0));
+
                             if(moveBack == 1){
                                 deck.size += 10;
                             } else if(moveBack == 2){
@@ -291,11 +343,9 @@ bool startGame(RenderWindow &window){
                     To = 10;
                     if(a.box[hintTo].pTop->item.posX>hintNode.bottom->item.posX){
                         borderX = a.box[hintTo].pTop->item.posX-hintNode.bottom->item.posX;
-                        //To = borderX/20;
                         borderX = borderX/To;
                     } else{
                         borderX = a.box[hintTo].pTop->item.posX - hintNode.bottom->item.posX;
-                        //To = -borderX/20;
                         borderX = borderX/To;
                     }
                     borderY = (a.box[hintTo].pTop->item.posY + 20 - hintNode.bottom->item.posY) / To;
@@ -304,10 +354,12 @@ bool startGame(RenderWindow &window){
                         window.clear();
                         window.draw(m_background);
                         window.draw(deck.m_sprite);
+                        window.draw(volume);
                         //  window.draw(convex);
                         window.draw(hintTile);
                         window.draw(restartTile);
                         window.draw(back);
+                        window.draw(scoreText);
                         window.draw(exitTile);
                         drawStart(window,&a,0);
                         drawCollected(window, collected);
@@ -348,6 +400,8 @@ bool startGame(RenderWindow &window){
                                     moved = move(col,&a.box[chBox], &a.box[i]);
                                     if(a.box[i].pTop->item.value==1){
                                         if(checkPas(&a.box[i])){
+                                            score +=100;
+                                            scoreText.setString("Score " + to_string(score));
                                             moveBack = 2;
                                             for(int k = 0; k<12; k++){
                                                 a.box[i].Pop();
@@ -356,47 +410,62 @@ bool startGame(RenderWindow &window){
                                             a.box[i].Pop();
                                             a.box[i].pTop->item.visible = true;
                                             numCollected++;
+                                            if(numCollected == 8){
+                                                win.m_path = "C:\\Users\\Asus\\Desktop\\spider\\resource\\fire.png";
+                                                win.setTexture(win.m_path);
+                                                win.setPosition(250,100);
+                                                win.m_sprite.setColor(sf::Color(255,255,255,255));
+                                            }
                                         }
                                     }
-                                    if(moved && !a.box[chBox].pTop->item.visible){
-                                        Card c = a.box[chBox].pTop->item;
-                                        c.setPosition(c.posX, c.posY);
-                                        c.setTexture(c.path);
-                                       // if(a.box[chBox].pTop->next->item.value != 0)
-                                        for(int i = 1; i<3; i++){
-                                            c.m_sprite.setScale(1-i*0.5, 1);
-                                            c.m_sprite.setPosition(c.m_sprite.getPosition().x + cardWidth*0.25,c.m_sprite.getPosition().y);
-                                            window.clear();
-                                            window.draw(m_background);
-                                            drawStart(window,&a, 0);
-                                            window.draw(deck.m_sprite);
-                                            window.draw(hintTile);
-                                            window.draw(restartTile);
-                                            window.draw(back);
-                                            window.draw(c);
-                                            window.draw(exitTile);
-                                            drawCollected(window, collected);
-                                            window.display();
+                                    if(moved) {
+                                        score--;
+                                        scoreText.setString("Score " + to_string(score));
+                                        if (!a.box[chBox].pTop->item.visible) {
+                                            Card c = a.box[chBox].pTop->item;
+                                            c.setPosition(c.posX, c.posY);
+                                            c.setTexture(c.path);
+                                            for (int i = 1; i < 3; i++) {
+                                                c.m_sprite.setScale(1 - i * 0.5, 1);
+                                                c.m_sprite.setPosition(c.m_sprite.getPosition().x + cardWidth * 0.25,
+                                                                       c.m_sprite.getPosition().y);
+                                                window.clear();
+                                                window.draw(m_background);
+                                                window.draw(volume);
+                                                drawStart(window, &a, 0);
+                                                window.draw(deck.m_sprite);
+                                                window.draw(hintTile);
+                                                window.draw(restartTile);
+                                                window.draw(back);
+                                                window.draw(scoreText);
+                                                window.draw(c);
+                                                window.draw(exitTile);
+                                                drawCollected(window, collected);
+                                                window.display();
+                                            }
+                                            c.visible = true;
+                                            c.m_path = a.box[chBox].pTop->item.m_path;
+                                            c.setTexture(c.m_path);
+                                            for (int i = 1; i < 3; i++) {
+                                                c.m_sprite.setScale(0 + i * 0.5, 1);
+                                                c.m_sprite.setPosition(c.m_sprite.getPosition().x - cardWidth * 0.25,
+                                                                       c.m_sprite.getPosition().y);
+                                                window.clear();
+                                                window.draw(m_background);
+                                                drawStart(window, &a, 0);
+                                                window.draw(volume);
+                                                window.draw(deck.m_sprite);
+                                                window.draw(hintTile);
+                                                window.draw(restartTile);
+                                                window.draw(back);
+                                                window.draw(scoreText);
+                                                window.draw(exitTile);
+                                                window.draw(c.m_sprite);
+                                                drawCollected(window, collected);
+                                                window.display();
+                                            }
+                                            a.box[chBox].pTop->item.visible = true;
                                         }
-                                        c.visible = true;
-                                        c.m_path = a.box[chBox].pTop->item.m_path;
-                                        c.setTexture(c.m_path);
-                                        for(int i = 1; i<3; i++){
-                                            c.m_sprite.setScale(0 +i*0.5, 1);
-                                            c.m_sprite.setPosition(c.m_sprite.getPosition().x - cardWidth*0.25,c.m_sprite.getPosition().y);
-                                            window.clear();
-                                            window.draw(m_background);
-                                            drawStart(window,&a, 0);
-                                            window.draw(deck.m_sprite);
-                                            window.draw(hintTile);
-                                            window.draw(restartTile);
-                                            window.draw(back);
-                                            window.draw(exitTile);
-                                            window.draw(c.m_sprite);
-                                            drawCollected(window, collected);
-                                            window.display();
-                                        }
-                                        a.box[chBox].pTop->item.visible = true;
                                     }
                                     break;
                                 }
@@ -408,6 +477,8 @@ bool startGame(RenderWindow &window){
                                         moved = move(col, &a.box[chBox],&a.box[i]);
                                         if(a.box[i].pTop->item.value==1){
                                             if(checkPas(&a.box[i])){
+                                                score+=100;
+                                                scoreText.setString("Score " + to_string(score));
                                                 moveBack = 2;
                                                 for(int k = 0; k<12; k++){
                                                     a.box[i].Pop();
@@ -416,47 +487,65 @@ bool startGame(RenderWindow &window){
                                                 a.box[i].Pop();
                                                 a.box[i].pTop->item.visible = true;
                                                 numCollected++;
+                                                if(numCollected == 8){
+                                                    win.m_path = "C:\\Users\\Asus\\Desktop\\spider\\resource\\fire.png";
+                                                    win.setTexture(win.m_path);
+                                                    win.setPosition(250,100);
+                                                    win.m_sprite.setColor(sf::Color(255,255,255,255));
+                                                }
                                             }
                                         }
-                                        if(moved && !a.box[chBox].pTop->item.visible){
-                                            Card c = a.box[chBox].pTop->item;
-                                            c.setPosition(c.posX, c.posY);
-                                            c.setTexture(c.path);
-                                         // if(a.box[i].pTop->item.value != 0)
-                                            for(int i = 1; i<3; i++){
-                                                c.m_sprite.setScale(1-i*0.5, 1);
-                                                c.m_sprite.setPosition(c.m_sprite.getPosition().x + cardWidth*0.25,c.m_sprite.getPosition().y);
-                                                window.clear();
-                                                window.draw(m_background);
-                                                drawStart(window,&a, 0);
-                                                window.draw(deck.m_sprite);
-                                                window.draw(hintTile);
-                                                window.draw(restartTile);
-                                                window.draw(back);
-                                                window.draw(c);
-                                                window.draw(exitTile);
-                                                drawCollected(window, collected);
-                                                window.display();
+                                        if(moved) {
+                                            score--;
+                                            scoreText.setString("Score " + to_string(score));
+                                            if (!a.box[chBox].pTop->item.visible) {
+                                                Card c = a.box[chBox].pTop->item;
+                                                c.setPosition(c.posX, c.posY);
+                                                c.setTexture(c.path);
+                                                // if(a.box[i].pTop->item.value != 0)
+                                                for (int i = 1; i < 3; i++) {
+                                                    c.m_sprite.setScale(1 - i * 0.5, 1);
+                                                    c.m_sprite.setPosition(
+                                                            c.m_sprite.getPosition().x + cardWidth * 0.25,
+                                                            c.m_sprite.getPosition().y);
+                                                    window.clear();
+                                                    window.draw(m_background);
+                                                    window.draw(volume);
+                                                    drawStart(window, &a, 0);
+                                                    window.draw(deck.m_sprite);
+                                                    window.draw(hintTile);
+                                                    window.draw(restartTile);
+                                                    window.draw(back);
+                                                    window.draw(scoreText);
+                                                    window.draw(c);
+                                                    window.draw(exitTile);
+                                                    drawCollected(window, collected);
+                                                    window.display();
+                                                }
+                                                c.visible = true;
+                                                c.m_path = a.box[chBox].pTop->item.m_path;
+                                                c.setTexture(c.m_path);
+                                                for (int i = 1; i < 3; i++) {
+                                                    c.m_sprite.setScale(0 + i * 0.5, 1);
+                                                    c.m_sprite.setPosition(
+                                                            c.m_sprite.getPosition().x - cardWidth * 0.25,
+                                                            c.m_sprite.getPosition().y);
+                                                    window.clear();
+                                                    window.draw(m_background);
+                                                    window.draw(deck.m_sprite);
+                                                    window.draw(volume);
+                                                    window.draw(hintTile);
+                                                    window.draw(restartTile);
+                                                    window.draw(back);
+                                                    window.draw(c.m_sprite);
+                                                    window.draw(scoreText);
+                                                    window.draw(exitTile);
+                                                    drawCollected(window, collected);
+                                                    drawStart(window, &a, 0);
+                                                    window.display();
+                                                }
+                                                a.box[chBox].pTop->item.visible = true;
                                             }
-                                            c.visible = true;
-                                            c.m_path = a.box[chBox].pTop->item.m_path;
-                                            c.setTexture(c.m_path);
-                                            for(int i = 1; i<3; i++){
-                                                c.m_sprite.setScale(0 +i*0.5, 1);
-                                                c.m_sprite.setPosition(c.m_sprite.getPosition().x - cardWidth*0.25,c.m_sprite.getPosition().y);
-                                                window.clear();
-                                                window.draw(m_background);
-                                                window.draw(deck.m_sprite);
-                                                window.draw(hintTile);
-                                                window.draw(restartTile);
-                                                window.draw(back);
-                                                window.draw(c.m_sprite);
-                                                window.draw(exitTile);
-                                                drawCollected(window, collected);
-                                                drawStart(window,&a, 0);
-                                                window.display();
-                                            }
-                                            a.box[chBox].pTop->item.visible = true;
                                         }
                                     }
                                 }
@@ -495,14 +584,17 @@ bool startGame(RenderWindow &window){
         }
         window.clear();
         window.draw(m_background);
+        window.draw(volume);
         window.draw(deck.m_sprite);
         window.draw(hintTile);
         window.draw(restartTile);
         drawCollected(window, collected);
         window.draw(back);
         window.draw(exitTile);
+        window.draw(scoreText);
         drawStart(window, &a, chBox);
         window.draw(convex);
+        window.draw(win);
         window.display();
     }
 }
