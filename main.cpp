@@ -26,10 +26,11 @@ bool startGame(RenderWindow &window){
     if(menuNum == 4){
         readBox(&a);
         readDeck(&deck);
+        deck.m_path = "C:/Users/Asus/Desktop/spider/resource/cards/card_back.bmp";
         if(deck.size < 10){
             deck.m_path="C:/Users/Asus/Desktop/spider/resource/cards/empty_card.png";
-            deck.setTexture(deck.m_path);
         }
+        deck.setTexture(deck.m_path);
         numCollected = readCollected(collected, &score);
     } else{
         deck.SetupCards(menuNum);
